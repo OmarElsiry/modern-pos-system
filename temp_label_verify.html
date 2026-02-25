@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html dir="rtl">
+
+<head>
+    <style>
+        body {
+            margin: 20px;
+            background: #f0f0f0;
+            font-family: sans-serif;
+        }
+
+        .label {
+            width: 300px;
+            /* Scaled up for visibility */
+            height: 200px;
+            background: white;
+            border: 1px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px;
+        }
+
+        .content {
+            /* THE ROTATION FIX */
+            transform: rotate(90deg);
+            transform-origin: center;
+            border: 1px dashed red;
+            /* show boundary of rotated content */
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Normal Label</h2>
+    <div class="label">
+        <div class="content" style="transform: none;">
+            Normal Text
+        </div>
+    </div>
+
+    <h2>Rotated Label (Simulation)</h2>
+    <div class="label">
+        <div class="content">
+            Rotated Text
+        </div>
+    </div>
+</body>
+
+</html>

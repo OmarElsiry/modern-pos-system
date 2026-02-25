@@ -1,0 +1,214 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+@page {
+    size: A4;
+    margin: 15mm;
+}
+
+/* Professional A4 Print Styles */
+.print-a4-container {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    background: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #1e293b;
+    line-height: 1.5;
+}
+
+.print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 3px solid #0f172a;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.business-info {
+    flex: 1;
+}
+
+.business-name {
+    font-size: 32px;
+    font-weight: 900;
+    color: #0f172a;
+    margin: 0 0 10px 0;
+    letter-spacing: -1px;
+}
+
+.business-info p {
+    margin: 2px 0;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.invoice-meta {
+    text-align: left;
+    min-width: 200px;
+}
+
+.document-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #475569;
+    margin: 0 0 15px 0;
+    text-align: left;
+}
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 15px;
+    font-size: 13px;
+}
+
+.customer-section {
+    margin-bottom: 30px;
+}
+
+.customer-section h3 {
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 5px;
+}
+
+.customer-info-box {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+}
+
+.items-section {
+    margin-bottom: 40px;
+}
+
+.print-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.print-table th {
+    background: #f1f5f9;
+    color: #475569;
+    text-align: right;
+    padding: 12px 15px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.print-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    text-align: right;
+    /* Explicit RTL alignment */
+    vertical-align: top;
+}
+
+/* Explicit Column Widths for Reports */
+.col-id {
+    width: 50px;
+    text-align: center !important;
+}
+
+.col-name,
+.col-product {
+    width: 35%;
+    font-weight: 700;
+}
+
+.col-qty {
+    width: 80px;
+    text-align: center !important;
+}
+
+.col-price {
+    width: 100px;
+}
+
+.col-phone {
+    width: 120px;
+    white-space: nowrap;
+}
+
+.col-address {
+    width: auto;
+    font-size: 11px !important;
+    color: #64748b;
+}
+
+.col-total {
+    width: 140px;
+    font-weight: 900;
+    background: #f8fafc;
+    text-align: left !important;
+}
+
+.print-table tfoot td {
+    padding-top: 20px;
+    border-bottom: none;
+}
+
+.total-amount {
+    font-size: 20px;
+    font-weight: 900;
+    color: #0f172a;
+    background: #f1f5f9;
+    padding: 10px 15px !important;
+    border-radius: 8px;
+}
+
+.print-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: auto;
+    padding-top: 50px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.footer-notes {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.barcode-font {
+    font-family: 'Libre Barcode 39', cursive;
+    font-size: 40px;
+    margin-top: 10px;
+    color: #e2e8f0;
+}
+
+@media print {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .print-a4-container {
+        width: 100%;
+        height: auto;
+        padding: 0;
+        margin: 0;
+        box-shadow: none;
+    }
+}
+
+.text-right {
+    text-align: right;
+}
+
+.font-bold {
+    font-weight: 700;
+}

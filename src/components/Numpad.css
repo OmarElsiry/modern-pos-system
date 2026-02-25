@@ -1,0 +1,122 @@
+.numpad-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: none;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.numpad-container {
+    background: var(--color-bg-surface);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-2xl);
+    border: 1px solid var(--color-border);
+    width: 20rem;
+}
+
+.numpad-header-info {
+    margin-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-3);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.numpad-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-2);
+}
+
+.numpad-row.centered {
+    justify-content: center;
+    gap: var(--spacing-8);
+}
+
+.numpad-row.secondary {
+    opacity: 0.8;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.numpad-item-name {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-base);
+    flex: 1;
+    text-align: right;
+}
+
+.numpad-item-price,
+.numpad-item-qty,
+.numpad-item-total {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-1);
+    white-space: nowrap;
+}
+
+.numpad-item-price strong,
+.numpad-item-total strong {
+    color: var(--color-primary);
+}
+
+.numpad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-2);
+}
+
+.numpad-btn {
+    height: 4rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-canvas);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.numpad-btn:hover {
+    background: var(--color-bg-hover);
+    transform: translateY(-2px);
+}
+
+.numpad-btn:active {
+    transform: translateY(0);
+}
+
+.numpad-btn.backspace {
+    color: var(--color-danger);
+}
+
+.numpad-btn.clear {
+    color: var(--color-danger);
+    background: var(--color-danger-bg);
+}
+
+.numpad-btn.confirm {
+    grid-column: span 3;
+    background: var(--color-primary);
+    color: white;
+    margin-top: var(--spacing-2);
+}
+
+.numpad-btn.confirm:hover {
+    background: var(--color-primary-dark);
+}
+
+.arabic-font {
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--font-weight-bold);
+}

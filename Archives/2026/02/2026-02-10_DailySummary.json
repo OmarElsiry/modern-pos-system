@@ -1,0 +1,15 @@
+{
+  "date": "2026-02-10",
+  "totalSales": 24,
+  "invoiceCount": 2,
+  "topProducts": [
+    {
+      "name": "1335",
+      "quantity": 2
+    }
+  ],
+  "stockAlertsCount": 2,
+  "cashSales": 24,
+  "cardSales": 0,
+  "lastUpdated": "2026-02-11T00:24:24.046Z"
+}

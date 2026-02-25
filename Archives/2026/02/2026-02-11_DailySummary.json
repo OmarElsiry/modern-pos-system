@@ -1,0 +1,15 @@
+{
+  "date": "2026-02-11",
+  "totalSales": 200,
+  "invoiceCount": 1,
+  "topProducts": [
+    {
+      "name": "tshirt black medium",
+      "quantity": 2
+    }
+  ],
+  "stockAlertsCount": 4,
+  "cashSales": 0,
+  "cardSales": 0,
+  "lastUpdated": "2026-02-12T00:08:22.304Z"
+}

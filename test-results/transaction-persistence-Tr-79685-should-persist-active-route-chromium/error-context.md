@@ -1,0 +1,115 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - generic:
+    - generic:
+      - complementary:
+        - generic:
+          - heading [level=1]: بيت ورد
+          - button:
+            - img
+        - navigation:
+          - link:
+            - /url: "#/pos"
+            - generic:
+              - img
+            - generic: نقطة البيع
+          - link:
+            - /url: "#/dashboard"
+            - generic:
+              - img
+            - generic: لوحة التحكم
+          - link:
+            - /url: "#/products"
+            - generic:
+              - img
+            - generic: المنتجات
+          - link:
+            - /url: "#/categories"
+            - generic:
+              - img
+            - generic: الأقسام
+          - link:
+            - /url: "#/customers"
+            - generic:
+              - img
+            - generic: العملاء
+          - link:
+            - /url: "#/invoices"
+            - generic:
+              - img
+            - generic: سجل الفواتير
+          - link:
+            - /url: "#/reports"
+            - generic:
+              - img
+            - generic: التقارير
+          - link:
+            - /url: "#/settings"
+            - generic:
+              - img
+            - generic: الإعدادات
+        - generic:
+          - button:
+            - generic:
+              - img
+            - generic: وضع ملء الشاشة
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - img
+                - textbox:
+                  - /placeholder: ابحث بالاسم أو الباركود... (F3)
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                  - heading [level=3]: ابدأ البحث عن منتجات لإضافتها
+          - generic:
+            - generic:
+              - generic:
+                - button: جملة
+                - button: قطاعي
+              - generic:
+                - generic: العميل
+                - generic:
+                  - img
+                  - textbox:
+                    - /placeholder: ابحث باسم العميل أو رقم الهاتف...
+            - generic:
+              - generic:
+                - img
+                - paragraph: السلة فارغة
+            - generic:
+              - generic:
+                - generic:
+                  - generic: عدد الأصناف
+                  - generic: "0"
+                - generic:
+                  - generic: الإجمالي
+                  - generic:
+                    - generic: "0"
+                    - generic: جنية
+              - generic:
+                - button [disabled]:
+                  - img
+                  - text: إتمام البيع
+                - button [disabled]:
+                  - img
+  - dialog "جولة إرشادية" [ref=e2]:
+    - heading "جولة إرشادية" [level=2] [ref=e5]
+    - generic [ref=e7]:
+      - img [ref=e9]
+      - heading "أهلاً بك في بيت ورد" [level=2] [ref=e12]
+      - paragraph [ref=e13]: هذا النظام مصمم لمساعدتك على إدارة مبيعاتك بسرعة وسهولة. سنأخذك في جولة سريعة.
+    - generic [ref=e19]:
+      - button "تخطي" [active] [ref=e20]
+      - button "التالي" [ref=e22]
+    - button "Close" [ref=e23]:
+      - img [ref=e24]
+      - generic [ref=e27]: Close
+```

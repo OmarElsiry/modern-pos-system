@@ -1,0 +1,130 @@
+[cmdk-root] {
+    top: 0;
+    left: 0;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    font-family: 'Cairo', sans-serif;
+}
+
+[cmdk-dialog] {
+    background: rgba(24, 24, 27, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 640px;
+    max-height: 480px;
+    box-shadow: 0 16px 70px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.15s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+[cmdk-input] {
+    font-family: 'Cairo', sans-serif;
+    border: none;
+    width: 100%;
+    font-size: 18px;
+    padding: 20px;
+    outline: none;
+    background: transparent;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[cmdk-input]::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+[cmdk-list] {
+    height: var(--cmdk-list-height);
+    max-height: 400px;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+    padding: 8px;
+    transition: height 100ms ease;
+}
+
+[cmdk-group-heading] {
+    user-select: none;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 8px 8px 4px 8px;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+[cmdk-item] {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 48px;
+    padding: 0 12px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.1s ease;
+}
+
+[cmdk-item][data-selected="true"] {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+[cmdk-item][data-disabled="true"] {
+    color: rgba(255, 255, 255, 0.4);
+    cursor: not-allowed;
+}
+
+[cmdk-empty] {
+    font-size: 14px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 40px 0;
+}
+
+/* Scrollbar styling */
+[cmdk-list]::-webkit-scrollbar {
+    width: 8px;
+}
+
+[cmdk-list]::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+[cmdk-list]::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+[cmdk-list]::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* RTL Specific Overrides if needed, but flex gap usually handles it */
+[dir="rtl"] [cmdk-item] {
+    flex-direction: row;
+    /* Ensure row direction */
+}

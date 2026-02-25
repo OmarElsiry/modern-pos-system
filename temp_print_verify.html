@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<style>
+    body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f1f5f9;
+    }
+    .page-container {
+    width: 210mm;
+    min-height: 297mm;
+    height: auto;
+    margin: 0 auto;
+    background: white;
+    position: relative;
+    box-sizing: border-box;
+    padding: 0; 
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid red; /* Visual aid to see boundaries */
+    }
+    
+    .test-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 48px;
+        font-weight: bold;
+        color: #ddd;
+        transform: translate(-50%, -50%) rotate(-45deg);
+    }
+
+    @media print {
+    body { background: none; }
+    .page-container { box-shadow: none; margin: 0; border: none; }
+    /* THIS IS THE CRITICAL LINE BEING TESTED */
+    @page { margin: 0; size: A4 portrait; }
+    }
+</style>
+</head>
+<body>
+<div class="page-container">
+    <div style="position: absolute; top: 20px; right: 20px; font-size: 20px;">تجربة طباعة فاتورة A4</div>
+    <div style="position: absolute; top: 60px; right: 20px;">التاريخ: 2026-02-12</div>
+    <div class="test-content">PORTRAIT MODE</div>
+    
+    <!-- Mimic an items table -->
+    <div style="position: absolute; top: 150px; width: 100%; px: 20px;">
+        <table style="width: 90%; margin: 0 auto; border-collapse: collapse; text-align: right;">
+            <tr style="background: #eee; border-bottom: 2px solid #000;">
+                <th style="padding: 10px;">الصنف</th>
+                <th style="padding: 10px;">السعر</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px;">منتج تجريبي 1</td>
+                <td style="padding: 10px;">100.00</td>
+            </tr>
+             <tr>
+                <td style="padding: 10px;">منتج تجريبي 2</td>
+                <td style="padding: 10px;">200.00</td>
+            </tr>
+        </table>
+    </div>
+</div>
+</body>
+</html>

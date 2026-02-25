@@ -1,0 +1,97 @@
+.tooltip-container {
+    position: relative;
+    display: inline-flex;
+}
+
+.tooltip-bubble {
+    position: absolute;
+    background: var(--color-bg-surface);
+    color: var(--color-text-primary);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    z-index: var(--z-popover);
+    box-shadow: var(--shadow-lg);
+    border: 0.0625rem solid var(--glass-border);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    animation: tooltip-fade-in var(--transition-fast) ease-out;
+    pointer-events: none;
+}
+
+/* Positions */
+.tooltip-top {
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-0.5rem);
+}
+
+.tooltip-bottom {
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(0.5rem);
+}
+
+.tooltip-left {
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%) translateX(-0.5rem);
+}
+
+.tooltip-right {
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%) translateX(0.5rem);
+}
+
+/* Arrow */
+.tooltip-arrow {
+    position: absolute;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--color-bg-surface);
+    border-bottom: 0.0625rem solid var(--glass-border);
+    border-right: 0.0625rem solid var(--glass-border);
+}
+
+.tooltip-top .tooltip-arrow {
+    bottom: -0.25rem;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+}
+
+.tooltip-bottom .tooltip-arrow {
+    top: -0.25rem;
+    left: 50%;
+    transform: translateX(-50%) rotate(-135deg);
+}
+
+@keyframes tooltip-fade-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translate(-50%, -0.25rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translate(-50%, -0.5rem);
+    }
+}
+
+/* Adjust animation for non-top positions */
+.tooltip-bottom {
+    animation-name: tooltip-fade-in-bottom;
+}
+
+@keyframes tooltip-fade-in-bottom {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translate(-50%, 0.25rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translate(-50%, 0.5rem);
+    }
+}
