@@ -49,9 +49,9 @@ export default defineConfig(({ mode }) => ({
     // Only apply HTML fix for Electron builds, not for browser dev
     mode === 'electron' ? fixHtmlForElectron() : null
   ].filter(Boolean),
-  base: './',
+  base: process.env.VERCEL ? '/' : './',
   build: {
-    outDir: 'dist/react',
+    outDir: process.env.VERCEL ? 'dist' : 'dist/react',
     target: 'esnext',
     minify: false, // Don't minify for debugging
     rollupOptions: {
