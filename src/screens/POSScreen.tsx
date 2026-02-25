@@ -3,7 +3,8 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { CustomerSelect, Numpad, EmptyState } from '../components';
 import ReceiptPreview from '../components/ReceiptPreview';
 import { SalesService } from '../services/SalesService';
-import { Invoice, PricingType, Product, Customer } from '../types/models';
+import { SettingsService } from '../services/SettingsService';
+import { Invoice, Product, Customer, SystemSettings } from '../types/models';
 import { showToast } from '../utils/toast';
 import { useProductSearch } from '../hooks/useProductSearch';
 import { useTransaction } from '../hooks/useTransaction';
@@ -28,6 +29,8 @@ const POSScreen: React.FC = () => {
   // --- Refs & Services ---
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const salesService = useMemo(() => new SalesService(), []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const settingsService = useMemo(() => new SettingsService(), []);
 
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const touchStart = useRef<number | null>(null);
@@ -51,11 +54,29 @@ const POSScreen: React.FC = () => {
   const [numpadBuffer, setNumpadBuffer] = useState<string>('');
   const [undoItem, setUndoItem] = useState<{ id: string; product: Product; quantity: number } | null>(null);
 
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    settingsService.getSettings().then(res => {
+      if (res.success && res.data && mounted) {
+        setSettings(res.data);
+      }
+    });
+    return () => { mounted = false; };
+  }, [settingsService]);
+
   // --- Business Logic Handlers ---
-  const handlePricingTypeChange = useCallback(async (type: PricingType) => {
+  const handlePricingTypeChange = useCallback(async (type: string) => {
     await transaction.setPricingType(type);
-    showToast.success(`تم تغيير نوع التسعير إلى ${type === 'wholesale' ? 'جملة' : 'قطاعي'}`);
-  }, [transaction]);
+
+    let tierName = '';
+    if (type === 'retail') tierName = settings?.pricingOpts?.tier1Name || 'قطاعي';
+    else if (type === 'wholesale') tierName = settings?.pricingOpts?.tier2Name || 'جملة';
+    else tierName = settings?.pricingOpts?.customTiers?.find(t => t.id === type)?.name || 'سعر آخر';
+
+    showToast.success(`تم تغيير نوع التسعير إلى ${tierName}`);
+  }, [transaction, settings]);
 
   const handleCustomerSelect = useCallback((customer: Customer | null) => {
     transaction.setCustomer(customer?.id || null);
@@ -260,6 +281,7 @@ const POSScreen: React.FC = () => {
       }
       if (e.key === 'F9') {
         e.preventDefault();
+        // Keyboard support for multiple tiers is complex, just toggle wholesale/retail for F9
         handlePricingTypeChange(transaction.invoice?.pricingType === 'wholesale' ? 'retail' : 'wholesale');
       }
     };
@@ -362,7 +384,7 @@ const POSScreen: React.FC = () => {
                     <h3 className="font-bold text-foreground text-[11px] line-clamp-1 leading-tight">{product.name}</h3>
                     <div className="flex justify-between items-end">
                       <div className="text-lg font-black text-foreground leading-none">
-                        {(transaction.invoice!.pricingType === 'wholesale' ? product.wholesalePrice : product.retailPrice).toFixed(0)} <span className="text-[10px] font-bold text-muted-foreground">ج.م</span>
+                        {(transaction.invoice!.pricingType === 'wholesale' ? product.wholesalePrice : transaction.invoice!.pricingType === 'retail' ? product.retailPrice : (product.metadata?.customPrices?.[transaction.invoice!.pricingType] || product.retailPrice)).toFixed(0)} <span className="text-[10px] font-bold text-muted-foreground">ج.م</span>
                       </div>
                       {product.stockQuantity <= 5 && (
                         <span className="text-[10px] bg-red-50 text-red-600 font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">
@@ -396,19 +418,30 @@ const POSScreen: React.FC = () => {
         </div>
 
         <div className="p-4 border-b flex flex-col gap-4 bg-surface-muted/30">
-          <div className="flex items-center bg-surface-muted rounded-xl p-1 h-12 shadow-inner">
+          <div className="flex gap-2 bg-surface-muted rounded-xl p-1 shadow-inner overflow-x-auto">
             <button
-              className={cn("flex-1 flex items-center justify-center text-sm font-bold rounded-lg h-full transition-all", transaction.invoice!.pricingType === 'wholesale' ? "bg-surface-bg text-foreground shadow-sm border border-border" : "text-muted-foreground hover:text-foreground")}
-              onClick={() => handlePricingTypeChange('wholesale')}
-            >
-              جملة
-            </button>
-            <button
-              className={cn("flex-1 flex items-center justify-center text-sm font-bold rounded-lg h-full transition-all", transaction.invoice!.pricingType === 'retail' ? "bg-surface-bg text-foreground shadow-sm border border-border" : "text-muted-foreground hover:text-foreground")}
+              className={cn("flex-none min-w-[80px] flex items-center justify-center p-2 text-sm font-bold rounded-lg transition-all", transaction.invoice!.pricingType === 'retail' ? "bg-surface-bg text-foreground shadow-sm border border-border" : "text-muted-foreground hover:text-foreground")}
               onClick={() => handlePricingTypeChange('retail')}
             >
-              قطاعي
+              {settings?.pricingOpts?.tier1Name || 'قطاعي'}
             </button>
+            {settings?.pricingOpts?.showTier2 !== false && (
+              <button
+                className={cn("flex-none min-w-[80px] flex items-center justify-center p-2 text-sm font-bold rounded-lg transition-all", transaction.invoice!.pricingType === 'wholesale' ? "bg-surface-bg text-foreground shadow-sm border border-border" : "text-muted-foreground hover:text-foreground")}
+                onClick={() => handlePricingTypeChange('wholesale')}
+              >
+                {settings?.pricingOpts?.tier2Name || 'جملة'}
+              </button>
+            )}
+            {(settings?.pricingOpts?.customTiers || []).map(tier => (
+              <button
+                key={tier.id}
+                className={cn("flex-none min-w-[80px] flex items-center justify-center p-2 text-sm font-bold rounded-lg transition-all", transaction.invoice!.pricingType === tier.id ? "bg-surface-bg text-foreground shadow-sm border border-border" : "text-muted-foreground hover:text-foreground")}
+                onClick={() => handlePricingTypeChange(tier.id)}
+              >
+                {tier.name}
+              </button>
+            ))}
           </div>
 
           <CustomerSelect
@@ -551,7 +584,7 @@ const POSScreen: React.FC = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center bg-surface-muted p-4 rounded-2xl">
                 <span className="text-muted-foreground font-bold uppercase text-xs">نوع السعر</span>
-                <span className="font-black text-foreground">{transaction.invoice?.pricingType === 'wholesale' ? 'سعر جملة' : 'سعر قطاعي'}</span>
+                <span className="font-black text-foreground">{transaction.invoice?.pricingType === 'wholesale' ? (settings?.pricingOpts?.tier2Name || 'سعر جملة') : transaction.invoice?.pricingType === 'retail' ? (settings?.pricingOpts?.tier1Name || 'سعر قطاعي') : (settings?.pricingOpts?.customTiers?.find(t => t.id === transaction.invoice?.pricingType)?.name || 'سعر مخصص')}</span>
               </div>
               <div className="flex justify-between items-center py-4 px-2 border-b border-border">
                 <span className="text-muted-foreground font-bold">مجموع الفاتورة</span>

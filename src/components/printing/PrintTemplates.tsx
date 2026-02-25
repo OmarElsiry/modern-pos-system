@@ -62,7 +62,7 @@ export const BrandedInvoiceA4 = React.forwardRef<HTMLDivElement, InvoicePrintPro
                             </div>
                             <div className="text-left">
                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-white border border-slate-200 text-slate-700">
-                                    {invoice.pricingType === 'wholesale' ? 'جملة' : 'قطاعي'}
+                                    {invoice.pricingType === 'wholesale' ? (settings?.pricingOpts?.tier2Name || 'جملة') : invoice.pricingType === 'retail' ? (settings?.pricingOpts?.tier1Name || 'قطاعي') : (settings?.pricingOpts?.customTiers?.find(t => t.id === invoice.pricingType)?.name || 'مخصص')}
                                 </span>
                             </div>
                         </div>
@@ -256,7 +256,7 @@ export const CustomerHistoryReport = React.forwardRef<HTMLDivElement, CustomerHi
                                     <td className="col-id">{index + 1}</td>
                                     <td className="col-qty font-bold">#{invoice.invoiceNumber}</td>
                                     <td className="col-phone">{new Date(invoice.createdAt).toLocaleDateString('ar-EG')}</td>
-                                    <td className="col-name">{invoice.pricingType === 'wholesale' ? 'جملة' : 'قطاعي'}</td>
+                                    <td className="col-name">{invoice.pricingType === 'wholesale' ? (settings?.pricingOpts?.tier2Name || 'جملة') : invoice.pricingType === 'retail' ? (settings?.pricingOpts?.tier1Name || 'قطاعي') : (settings?.pricingOpts?.customTiers?.find(t => t.id === invoice.pricingType)?.name || 'مخصص')}</td>
                                     <td className="col-address">{invoice.paymentMethod || 'نقدي'}</td>
                                     <td className="col-total">{(invoice.totalAmount || 0).toLocaleString('ar-EG')} ج.م</td>
                                 </tr>

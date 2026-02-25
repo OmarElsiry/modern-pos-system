@@ -95,7 +95,7 @@ export const useTransaction = (salesService: SalesService) => {
         updateState();
     };
 
-    const setPricingType = async (type: 'wholesale' | 'retail') => {
+    const setPricingType = async (type: string) => {
         const response = await salesService.setPricingType(type);
         if (response.success) {
             updateState();

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom';
 import { ProductService } from '../services/ProductService';
 import { CategoryService } from '../services/CategoryService';
-import { Product, ProductInput, Category } from '../types/models';
+import { SettingsService } from '../services/SettingsService';
+import { Product, ProductInput, Category, SystemSettings } from '../types/models';
 import { useStockAlerts } from '../hooks/useStockAlerts';
 import { showToast } from '../utils/toast';
 import { cn } from '@/lib/utils';
@@ -60,6 +61,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 const ProductManagement: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -127,28 +129,26 @@ const ProductManagement: React.FC = () => {
   const productService = useMemo(() => new ProductService(), []);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const categoryService = useMemo(() => new CategoryService(), []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const settingsService = useMemo(() => new SettingsService(), []);
   const stockAlerts = useStockAlerts();
 
-  const loadProducts = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
-    const response = await productService.getAllProducts();
-    if (response.success) {
-      setProducts(response.data);
-    }
+    const [prodRes, catRes, setRes] = await Promise.all([
+      productService.getAllProducts(),
+      categoryService.getAllCategories(),
+      settingsService.getSettings()
+    ]);
+    if (prodRes.success) setProducts(prodRes.data);
+    if (catRes.success) setCategories(catRes.data);
+    if (setRes.success && setRes.data) setSettings(setRes.data);
     setIsLoading(false);
-  }, [productService]);
-
-  const loadCategories = useCallback(async () => {
-    const response = await categoryService.getAllCategories();
-    if (response.success) {
-      setCategories(response.data);
-    }
-  }, [categoryService]);
+  }, [productService, categoryService, settingsService]);
 
   useEffect(() => {
-    loadProducts();
-    loadCategories();
-  }, [loadProducts, loadCategories]);
+    loadData();
+  }, [loadData]);
 
   useEffect(() => {
     let filtered = [...products];
@@ -275,7 +275,7 @@ const ProductManagement: React.FC = () => {
     if (response.success) {
       showToast.success(editingProduct ? 'تم تحديث المنتج بنجاح' : 'تم إضافة المنتج بنجاح');
       setIsModalOpen(false);
-      loadProducts();
+      loadData();
       stockAlerts.refresh();
     } else {
       showToast.error(response.error.message);
@@ -288,7 +288,7 @@ const ProductManagement: React.FC = () => {
     if (response.success) {
       showToast.success('تم حذف المنتج بنجاح');
       setIsDeleteModalOpen(false);
-      loadProducts();
+      loadData();
       stockAlerts.refresh();
     } else {
       showToast.error(response.error.message);
@@ -449,8 +449,13 @@ const ProductManagement: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="text-xs font-bold text-foreground">{product.retailPrice.toFixed(2)} <span className="text-[8px] text-muted-foreground">قطاعي</span></div>
-                          <div className="text-[10px] font-medium text-slate-400">{product.wholesalePrice.toFixed(2)} <span className="text-[8px]">جملة</span></div>
+                          <div className="text-xs font-bold text-foreground">{product.retailPrice.toFixed(2)} <span className="text-[8px] text-muted-foreground">{settings?.pricingOpts?.tier1Name || 'قطاعي'}</span></div>
+                          {settings?.pricingOpts?.showTier2 !== false && (
+                            <div className="text-[10px] font-medium text-slate-400">{product.wholesalePrice.toFixed(2)} <span className="text-[8px]">{settings?.pricingOpts?.tier2Name || 'جملة'}</span></div>
+                          )}
+                          {(settings?.pricingOpts?.customTiers || []).map(t => (
+                            <div key={t.id} className="text-[10px] font-medium text-indigo-400">{Number(product.metadata?.customPrices?.[t.id] || 0).toFixed(2)} <span className="text-[8px]">{t.name}</span></div>
+                          ))}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -654,7 +659,7 @@ const ProductManagement: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-muted-foreground pr-1">سعر الجملة</Label>
+                    <Label className="text-xs font-bold text-muted-foreground pr-1">سعر {settings?.pricingOpts?.tier2Name || 'جملة'}</Label>
                     <Input
                       type="number"
                       value={formData.wholesalePrice}
@@ -664,7 +669,7 @@ const ProductManagement: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-muted-foreground pr-1">سعر القطاعي</Label>
+                    <Label className="text-xs font-bold text-muted-foreground pr-1">سعر {settings?.pricingOpts?.tier1Name || 'قطاعي'}</Label>
                     <Input
                       type="number"
                       value={formData.retailPrice}
@@ -673,6 +678,18 @@ const ProductManagement: React.FC = () => {
                       className={cn("font-black text-center h-12 rounded-xl border-border bg-secondary/10 text-foreground transition-opacity", skips.prices && "opacity-50")}
                     />
                   </div>
+                  {(settings?.pricingOpts?.customTiers || []).map(t => (
+                    <div key={t.id} className="space-y-2">
+                      <Label className="text-xs font-bold text-muted-foreground pr-1">سعر {t.name}</Label>
+                      <Input
+                        type="number"
+                        value={formData.metadata?.customPrices?.[t.id] || ''}
+                        onChange={(e) => setFormData(f => ({ ...f, metadata: { ...f.metadata, customPrices: { ...(f.metadata?.customPrices || {}), [t.id]: parseFloat(e.target.value) || 0 } } }))}
+                        disabled={skips.prices}
+                        className={cn("font-black text-center h-12 rounded-xl border-border bg-surface-bg text-foreground transition-opacity", skips.prices && "opacity-50")}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
 

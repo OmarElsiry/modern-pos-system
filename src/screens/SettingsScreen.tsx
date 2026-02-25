@@ -21,7 +21,9 @@ import {
     AlignRight,
     FileText,
     Globe,
-    Coins
+    Coins,
+    Plus,
+    Trash2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { languages } from '../i18n';
@@ -652,6 +654,50 @@ const SettingsScreen: React.FC = () => {
                                     onChange={(e) => updateSetting('pricingOpts', { ...settings?.pricingOpts, tier2Name: e.target.value } as any)}
                                     className="h-14 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold opacity-disabled"
                                 />
+                            </div>
+
+                            <div className="pt-4 border-t border-border mt-4">
+                                <div className="flex items-center justify-between mb-4">
+                                    <Label className="text-xs font-black uppercase tracking-widest">{t('settings.extraTiers', 'أسعار إضافية')}</Label>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="rounded-xl"
+                                        onClick={() => {
+                                            const newTiers = [...(settings?.pricingOpts?.customTiers || []), { id: `tier_${Date.now()}`, name: 'سعر جديد' }];
+                                            updateSetting('pricingOpts', { ...settings?.pricingOpts, customTiers: newTiers } as any);
+                                        }}
+                                    >
+                                        <Plus size={16} className="mr-2" />
+                                        إضافة سعر
+                                    </Button>
+                                </div>
+                                <div className="space-y-3">
+                                    {(settings?.pricingOpts?.customTiers || []).map((tier, index) => (
+                                        <div key={tier.id} className="flex items-center gap-2">
+                                            <Input
+                                                value={tier.name}
+                                                onChange={(e) => {
+                                                    const newTiers = [...(settings?.pricingOpts?.customTiers || [])];
+                                                    newTiers[index].name = e.target.value;
+                                                    updateSetting('pricingOpts', { ...settings?.pricingOpts, customTiers: newTiers } as any);
+                                                }}
+                                                className="h-14 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold flex-1"
+                                            />
+                                            <Button
+                                                variant="destructive"
+                                                size="icon"
+                                                className="rounded-2xl h-14 w-14"
+                                                onClick={() => {
+                                                    const newTiers = (settings?.pricingOpts?.customTiers || []).filter(t => t.id !== tier.id);
+                                                    updateSetting('pricingOpts', { ...settings?.pricingOpts, customTiers: newTiers } as any);
+                                                }}
+                                            >
+                                                <Trash2 size={20} />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

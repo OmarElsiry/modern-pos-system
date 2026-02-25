@@ -39,7 +39,8 @@ export class SettingsRepository {
                 pricingOpts: {
                     tier1Name: row.tier1_name ?? 'قطاعي',
                     tier2Name: row.tier2_name ?? 'جملة',
-                    showTier2: Boolean(row.show_tier2 ?? 1)
+                    showTier2: Boolean(row.show_tier2 ?? 1),
+                    customTiers: row.custom_tiers ? JSON.parse(row.custom_tiers) : []
                 }
             };
         } catch (error: any) {
@@ -72,6 +73,7 @@ export class SettingsRepository {
             tier1_name = ?,
             tier2_name = ?,
             show_tier2 = ?,
+            custom_tiers = ?,
             last_updated = CURRENT_TIMESTAMP
         WHERE id = 1
       `);
@@ -93,7 +95,8 @@ export class SettingsRepository {
                 settings.thermalTemplate ? JSON.stringify(settings.thermalTemplate) : (current.thermalTemplate ? JSON.stringify(current.thermalTemplate) : null),
                 settings.pricingOpts?.tier1Name ?? current.pricingOpts?.tier1Name ?? 'قطاعي',
                 settings.pricingOpts?.tier2Name ?? current.pricingOpts?.tier2Name ?? 'جملة',
-                (settings.pricingOpts?.showTier2 ?? current.pricingOpts?.showTier2 ?? true) ? 1 : 0
+                (settings.pricingOpts?.showTier2 ?? current.pricingOpts?.showTier2 ?? true) ? 1 : 0,
+                settings.pricingOpts?.customTiers ? JSON.stringify(settings.pricingOpts.customTiers) : (current.pricingOpts?.customTiers ? JSON.stringify(current.pricingOpts.customTiers) : null)
             );
         } catch (error: any) {
             throw new DatabaseError(`Failed to update settings: ${error.message}`, 'ERR_SET_002', error);

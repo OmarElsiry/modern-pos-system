@@ -217,6 +217,12 @@ const CustomerManagement: React.FC = () => {
     });
   };
 
+  const getPricingTypeName = React.useCallback((type: string) => {
+    if (type === 'wholesale') return settings?.pricingOpts?.tier2Name || 'جملة';
+    if (type === 'retail') return settings?.pricingOpts?.tier1Name || 'قطاعي';
+    return settings?.pricingOpts?.customTiers?.find(t => t.id === type)?.name || 'مخصص';
+  }, [settings]);
+
   const loadCustomers = async () => {
     const response = await customerService.getAllCustomers();
     if (response.success) {
@@ -710,7 +716,7 @@ const CustomerManagement: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-lg font-black text-foreground tracking-tight">#{invoice.invoiceNumber}</span>
                       <Badge variant="secondary" className="bg-indigo-500/10 text-indigo-500 border-none font-black text-[10px]">
-                        {invoice.pricingType === 'wholesale' ? 'جملة' : 'قطاعي'}
+                        {getPricingTypeName(invoice.pricingType)}
                       </Badge>
                     </div>
                     <div className="text-sm text-muted-foreground font-medium flex items-center gap-2">

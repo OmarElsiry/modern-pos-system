@@ -145,6 +145,12 @@ const InvoiceHistory: React.FC = () => {
     }
   };
 
+  const getPricingTypeName = useCallback((type: string) => {
+    if (type === 'wholesale') return settings?.pricingOpts?.tier2Name || 'جملة';
+    if (type === 'retail') return settings?.pricingOpts?.tier1Name || 'قطاعي';
+    return settings?.pricingOpts?.customTiers?.find(t => t.id === type)?.name || 'مخصص';
+  }, [settings]);
+
   const filteredInvoices = useMemo(() => {
     let filtered = [...invoices];
 
@@ -546,7 +552,7 @@ const InvoiceHistory: React.FC = () => {
                   <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                     <div className="text-[10px] uppercase font-black text-slate-400 mb-2">نوع التسعير</div>
                     <div className="font-bold text-slate-900">
-                      {selectedInvoice.pricingType === 'wholesale' ? 'جملة' : 'قطاعي'}
+                      {getPricingTypeName(selectedInvoice.pricingType)}
                     </div>
                   </div>
                 </div>

@@ -172,6 +172,7 @@ function runMigrations(db: any): void {
       db.exec("ALTER TABLE settings ADD COLUMN tier1_name TEXT DEFAULT 'قطاعي'");
       db.exec("ALTER TABLE settings ADD COLUMN tier2_name TEXT DEFAULT 'جملة'");
       db.exec('ALTER TABLE settings ADD COLUMN show_tier2 INTEGER DEFAULT 1');
+      db.exec('ALTER TABLE settings ADD COLUMN custom_tiers TEXT');
       console.log('✅ Migration: Added Migration 15 (pricing opts) to settings');
     }
 
@@ -302,7 +303,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS invoices (
   id TEXT PRIMARY KEY,
   invoice_number TEXT NOT NULL UNIQUE,
-  pricing_type TEXT NOT NULL CHECK(pricing_type IN ('wholesale', 'retail')),
+  pricing_type TEXT NOT NULL,
   total_amount REAL NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -359,7 +360,21 @@ CREATE INDEX IF NOT EXISTS idx_activity_log_date ON activity_log(created_at);
         is_polling_enabled INTEGER DEFAULT 0,
         a4_template TEXT,
         thermal_template TEXT,
-        last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
+        last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
+        logo TEXT,
+        logo_position TEXT DEFAULT 'top-center',
+        show_name INTEGER DEFAULT 1,
+        show_address INTEGER DEFAULT 1,
+        show_phone INTEGER DEFAULT 1,
+        auto_print INTEGER DEFAULT 1,
+        archive_path TEXT,
+        logo2 TEXT,
+        logo2_position TEXT DEFAULT 'bottom-right',
+        show_logo2 INTEGER DEFAULT 1,
+        tier1_name TEXT DEFAULT 'قطاعي',
+        tier2_name TEXT DEFAULT 'جملة',
+        show_tier2 INTEGER DEFAULT 1,
+        custom_tiers TEXT
       );
 
       -- دراسة إدخال صف افتراضي إذا لم يكن موجوداً

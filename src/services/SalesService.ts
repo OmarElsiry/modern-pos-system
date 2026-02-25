@@ -63,7 +63,9 @@ export class SalesService {
       if (product) {
         const newPrice = pricingType === 'wholesale'
           ? product.wholesalePrice
-          : product.retailPrice;
+          : pricingType === 'retail'
+            ? product.retailPrice
+            : Number(product.metadata?.customPrices?.[pricingType] || product.retailPrice);
 
         item.unitPrice = newPrice;
         item.totalPrice = item.quantity * newPrice;
@@ -129,7 +131,9 @@ export class SalesService {
       } else {
         const unitPrice = this.currentInvoice.pricingType === 'wholesale'
           ? product.wholesalePrice
-          : product.retailPrice;
+          : this.currentInvoice.pricingType === 'retail'
+            ? product.retailPrice
+            : Number(product.metadata?.customPrices?.[this.currentInvoice.pricingType] || product.retailPrice);
 
         const newItem: InvoiceItem = {
           id: uuidv4(),

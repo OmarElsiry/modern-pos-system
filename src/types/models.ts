@@ -25,7 +25,7 @@ export interface Product {
 export interface Invoice {
   id: string;
   invoiceNumber: string;
-  pricingType: 'wholesale' | 'retail';
+  pricingType: string;
   items: InvoiceItem[];
   totalAmount: number;
   customerId?: string;
@@ -81,7 +81,7 @@ export interface InventoryReport {
   totalRetailValue: number;
 }
 
-export type PricingType = 'wholesale' | 'retail';
+export type PricingType = string;
 
 export interface ProductInput {
   name: string;
@@ -266,6 +266,7 @@ export interface SystemSettings {
     tier1Name: string;
     tier2Name: string;
     showTier2: boolean;
+    customTiers?: Array<{ id: string; name: string }>;
   };
 }
 

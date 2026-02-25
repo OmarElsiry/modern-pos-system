@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS invoices (
   id TEXT PRIMARY KEY,
   invoice_number TEXT NOT NULL UNIQUE,
-  pricing_type TEXT NOT NULL CHECK(pricing_type IN ('wholesale', 'retail')),
+  pricing_type TEXT NOT NULL,
   total_amount REAL NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
