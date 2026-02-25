@@ -1,0 +1,34 @@
+{
+    "settings": {
+        "title": "Settings",
+        "businessInfo": "Store Identity",
+        "businessInfoDesc": "Basic information shown on receipts",
+        "storeName": "Official Store Name",
+        "storeAddress": "Detailed Address",
+        "phone": "Contact Number",
+        "taxId": "Tax Number (Optional)",
+        "email": "Email Address",
+        "returnPolicy": "Return & Exchange Policy",
+        "thankYouNote": "Footer Note (Thank you)",
+        "save": "Save Changes",
+        "language": "Language",
+        "languageDesc": "Change application language",
+        "pricingOpts": "Pricing Labels",
+        "pricingDesc": "Customize how price modes are labelled",
+        "tier1": "Price 1 Label (e.g. Retail)",
+        "tier2": "Price 2 Label (e.g. Wholesale)",
+        "showTier2": "Enable 2nd Price Tier"
+    },
+    "nav": {
+        "pos": "POS",
+        "products": "Products",
+        "customers": "Customers",
+        "reports": "Reports",
+        "settings": "Settings"
+    },
+    "pos": {
+        "pay": "Pay Now",
+        "total": "Total",
+        "search": "Translate Search Product / Barcode"
+    }
+}

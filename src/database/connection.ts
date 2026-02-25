@@ -167,6 +167,14 @@ function runMigrations(db: any): void {
       console.log('✅ Migration: Added Migration 14 (logo2) to settings');
     }
 
+    // Migration 15: Add pricing options to settings
+    if (!columnExists(db, 'settings', 'tier1_name')) {
+      db.exec("ALTER TABLE settings ADD COLUMN tier1_name TEXT DEFAULT 'قطاعي'");
+      db.exec("ALTER TABLE settings ADD COLUMN tier2_name TEXT DEFAULT 'جملة'");
+      db.exec('ALTER TABLE settings ADD COLUMN show_tier2 INTEGER DEFAULT 1');
+      console.log('✅ Migration: Added Migration 15 (pricing opts) to settings');
+    }
+
     // Create indexes for new columns
     db.exec(`
       CREATE INDEX IF NOT EXISTS idx_invoices_customer ON invoices(customer_id);

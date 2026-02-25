@@ -19,8 +19,12 @@ import {
     AlignCenter,
     AlignLeft,
     AlignRight,
-    FileText
+    FileText,
+    Globe,
+    Coins
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { languages } from '../i18n';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +43,7 @@ const SettingsScreen: React.FC = () => {
     const [saving, setSaving] = useState(false);
     const [archiving, setArchiving] = useState(false);
     const { isDark, toggleTheme } = useTheme();
+    const { t, i18n } = useTranslation();
 
     const settingsService = new SettingsService();
     const archiveService = new ArchiveService();
@@ -583,6 +588,75 @@ const SettingsScreen: React.FC = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Left Column: Preferences */}
+                <div className="lg:col-span-4 space-y-8">
+                    {/* Language Settings */}
+                    <Card className="rounded-[40px] border-none bg-surface-bg shadow-2xl shadow-foreground/5 overflow-hidden">
+                        <CardHeader className="p-8 pb-4">
+                            <CardTitle className="text-xl font-black text-foreground flex items-center gap-2">
+                                <Globe size={24} className="text-primary" />
+                                {t('settings.language', 'لغة النظام')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-8 pt-0 space-y-4">
+                            {languages.map((lng) => (
+                                <div
+                                    key={lng.code}
+                                    onClick={() => i18n.changeLanguage(lng.code)}
+                                    className={cn(
+                                        "flex items-center justify-between p-4 rounded-3xl border-2 transition-all cursor-pointer",
+                                        i18n.language === lng.code
+                                            ? "bg-primary/10 border-primary shadow-lg"
+                                            : "bg-surface-muted border-transparent hover:border-primary/20"
+                                    )}
+                                >
+                                    <span className="font-bold">{lng.name}</span>
+                                    {i18n.language === lng.code && <div className="w-3 h-3 rounded-full bg-primary" />}
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+
+                    {/* Pricing Display Options */}
+                    <Card className="rounded-[40px] border-none bg-surface-bg shadow-2xl shadow-foreground/5 overflow-hidden">
+                        <CardHeader className="p-8 pb-4">
+                            <CardTitle className="text-xl font-black text-foreground flex items-center gap-2">
+                                <Coins size={24} className="text-primary" />
+                                {t('settings.pricingOpts', 'تسمية الأسعار')}
+                            </CardTitle>
+                            <CardDescription>{t('settings.pricingDesc', 'تخصيص مسميات أسعار الجملة والقطاعي')}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-8 pt-0 space-y-6">
+                            <div className="space-y-3">
+                                <Label className="text-xs font-black uppercase tracking-widest">{t('settings.tier1', 'السعر الأول (قطاعي)')}</Label>
+                                <Input
+                                    value={settings?.pricingOpts?.tier1Name || ''}
+                                    onChange={(e) => updateSetting('pricingOpts', { ...settings?.pricingOpts, tier1Name: e.target.value } as any)}
+                                    className="h-14 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold"
+                                />
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-xs font-black uppercase tracking-widest">{t('settings.tier2', 'السعر الثاني (جملة)')}</Label>
+                                    <Switch
+                                        checked={settings?.pricingOpts?.showTier2 ?? true}
+                                        onCheckedChange={(val) => updateSetting('pricingOpts', { ...settings?.pricingOpts, showTier2: val } as any)}
+                                        className="scale-75"
+                                    />
+                                </div>
+                                <Input
+                                    value={settings?.pricingOpts?.tier2Name || ''}
+                                    disabled={!(settings?.pricingOpts?.showTier2 ?? true)}
+                                    onChange={(e) => updateSetting('pricingOpts', { ...settings?.pricingOpts, tier2Name: e.target.value } as any)}
+                                    className="h-14 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold opacity-disabled"
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
 
                 {/* System Info - Bottom Row */}
                 <div className="lg:col-span-12">

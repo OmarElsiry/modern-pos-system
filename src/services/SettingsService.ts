@@ -22,7 +22,12 @@ export class SettingsService {
                         returnPolicy: 'يسمح بالاستبدال خلال 14 يوم'
                     },
                     autoPrint: true,
-                    archivePath: '/mock/archive'
+                    archivePath: '/mock/archive',
+                    pricingOpts: {
+                        tier1Name: 'قطاعي',
+                        tier2Name: 'جملة',
+                        showTier2: true
+                    }
                 }
             };
         }

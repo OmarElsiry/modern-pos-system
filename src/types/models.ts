@@ -262,6 +262,11 @@ export interface SystemSettings {
   a4Template?: InvoiceTemplate;
   thermalTemplate?: InvoiceTemplate;
   autoPrint?: boolean;
+  pricingOpts?: {
+    tier1Name: string;
+    tier2Name: string;
+    showTier2: boolean;
+  };
 }
 
 // Daily Data Persistence

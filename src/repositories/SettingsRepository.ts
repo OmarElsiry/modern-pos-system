@@ -36,6 +36,11 @@ export class SettingsRepository {
                 a4Template: row.a4_template ? JSON.parse(row.a4_template) : undefined,
                 thermalTemplate: row.thermal_template ? JSON.parse(row.thermal_template) : undefined,
                 autoPrint: Boolean(row.auto_print ?? 1),
+                pricingOpts: {
+                    tier1Name: row.tier1_name ?? 'قطاعي',
+                    tier2Name: row.tier2_name ?? 'جملة',
+                    showTier2: Boolean(row.show_tier2 ?? 1)
+                }
             };
         } catch (error: any) {
             throw new DatabaseError(`Failed to fetch settings: ${error.message}`, 'ERR_SET_001', error);
@@ -64,6 +69,9 @@ export class SettingsRepository {
             auto_print = ?,
             a4_template = ?,
             thermal_template = ?,
+            tier1_name = ?,
+            tier2_name = ?,
+            show_tier2 = ?,
             last_updated = CURRENT_TIMESTAMP
         WHERE id = 1
       `);
@@ -82,7 +90,10 @@ export class SettingsRepository {
                 (settings.businessInfo?.showPhone ?? current.businessInfo.showPhone) ? 1 : 0,
                 (settings.autoPrint ?? current.autoPrint) ? 1 : 0,
                 settings.a4Template ? JSON.stringify(settings.a4Template) : (current.a4Template ? JSON.stringify(current.a4Template) : null),
-                settings.thermalTemplate ? JSON.stringify(settings.thermalTemplate) : (current.thermalTemplate ? JSON.stringify(current.thermalTemplate) : null)
+                settings.thermalTemplate ? JSON.stringify(settings.thermalTemplate) : (current.thermalTemplate ? JSON.stringify(current.thermalTemplate) : null),
+                settings.pricingOpts?.tier1Name ?? current.pricingOpts?.tier1Name ?? 'قطاعي',
+                settings.pricingOpts?.tier2Name ?? current.pricingOpts?.tier2Name ?? 'جملة',
+                (settings.pricingOpts?.showTier2 ?? current.pricingOpts?.showTier2 ?? true) ? 1 : 0
             );
         } catch (error: any) {
             throw new DatabaseError(`Failed to update settings: ${error.message}`, 'ERR_SET_002', error);
