@@ -7,6 +7,32 @@ export class WebProductRepository implements BaseRepository<Product> {
     constructor() {
         // Initial mock data
         console.warn('Using WebProductRepository (Mock mode)');
+        this.products = [
+            {
+                id: '1',
+                name: 'منتج تجريبي 1',
+                barcode: '123456',
+                wholesalePrice: 8,
+                retailPrice: 10,
+                purchasePrice: 5,
+                stockQuantity: 100,
+                categoryId: '1',
+                createdAt: new Date(),
+                updatedAt: new Date()
+            },
+            {
+                id: '2',
+                name: 'منتج تجريبي 2',
+                barcode: '789012',
+                wholesalePrice: 20,
+                retailPrice: 25,
+                purchasePrice: 15,
+                stockQuantity: 50,
+                categoryId: '1',
+                createdAt: new Date(),
+                updatedAt: new Date()
+            }
+        ];
     }
 
     async findById(id: string): Promise<Product | null> {
