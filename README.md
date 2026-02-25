@@ -1,5 +1,7 @@
 # 🛍️ Modern POS System
 
+**Live Demo:** [https://modern-pos-system-pink.vercel.app/](https://modern-pos-system-pink.vercel.app/)
+
 A blazing-fast, modern, desktop-first Point of Sale (POS) system tailored for small-to-medium retailers. Built with cutting-edge web technologies wrapped seamlessly in an Electron application, this POS offers a fast, reliable, and rich user experience while connecting locally to a high-speed SQLite database.
 
 ## 🚀 Key Features

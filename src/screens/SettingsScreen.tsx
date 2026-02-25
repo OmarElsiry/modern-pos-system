@@ -175,7 +175,7 @@ const SettingsScreen: React.FC = () => {
                                 <div className="relative group">
                                     <Store className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
-                                        value={settings?.businessInfo.name || ''}
+                                        value={settings?.businessInfo?.name || ''}
                                         onChange={(e) => updateBusinessInfo('name', e.target.value)}
                                         placeholder="أدخل اسم المتجر"
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground"
@@ -187,7 +187,7 @@ const SettingsScreen: React.FC = () => {
                                 <div className="relative group">
                                     <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
-                                        value={settings?.businessInfo.address || ''}
+                                        value={settings?.businessInfo?.address || ''}
                                         onChange={(e) => updateBusinessInfo('address', e.target.value)}
                                         placeholder="المدينة، الحي، الشارع"
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground"
@@ -199,7 +199,7 @@ const SettingsScreen: React.FC = () => {
                                 <div className="relative group">
                                     <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
-                                        value={settings?.businessInfo.phone || ''}
+                                        value={settings?.businessInfo?.phone || ''}
                                         onChange={(e) => updateBusinessInfo('phone', e.target.value)}
                                         placeholder="01xxxxxxxxx"
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground"
@@ -211,7 +211,7 @@ const SettingsScreen: React.FC = () => {
                                 <div className="relative group">
                                     <ShieldCheck className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
-                                        value={settings?.businessInfo.taxId || ''}
+                                        value={settings?.businessInfo?.taxId || ''}
                                         onChange={(e) => updateBusinessInfo('taxId', e.target.value)}
                                         placeholder="123-456-789"
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground"
@@ -223,7 +223,7 @@ const SettingsScreen: React.FC = () => {
                                 <div className="relative group">
                                     <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
-                                        value={settings?.businessInfo.email || ''}
+                                        value={settings?.businessInfo?.email || ''}
                                         onChange={(e) => updateBusinessInfo('email', e.target.value)}
                                         placeholder="info@yourstore.com"
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground text-left"
@@ -236,7 +236,7 @@ const SettingsScreen: React.FC = () => {
                                 <div className="relative group">
                                     <ShieldCheck className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
-                                        value={settings?.businessInfo.returnPolicy || ''}
+                                        value={settings?.businessInfo?.returnPolicy || ''}
                                         onChange={(e) => updateBusinessInfo('returnPolicy' as any, e.target.value)}
                                         placeholder="لا يوجد استرجاع - يوجد استبدال..."
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground"
@@ -248,7 +248,7 @@ const SettingsScreen: React.FC = () => {
                                 <div className="relative group">
                                     <Store className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
-                                        value={settings?.businessInfo.thankYouNote || ''}
+                                        value={settings?.businessInfo?.thankYouNote || ''}
                                         onChange={(e) => updateBusinessInfo('thankYouNote' as any, e.target.value)}
                                         placeholder="شكراً لزيارتكم!"
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground"
@@ -290,7 +290,7 @@ const SettingsScreen: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                                         <div className="flex flex-col gap-4">
                                             <div className="relative group w-full aspect-square max-w-[160px] rounded-3xl bg-surface-muted border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all hover:border-primary/50 mx-auto">
-                                                {settings?.businessInfo.logo ? (
+                                                {settings?.businessInfo?.logo ? (
                                                     <>
                                                         <img src={settings.businessInfo.logo} alt="Primary Logo" className="w-full h-full object-contain p-2" />
                                                         <button
@@ -351,7 +351,7 @@ const SettingsScreen: React.FC = () => {
                                                         onClick={() => updateBusinessInfo('logoPosition' as any, pos.id)}
                                                         className={cn(
                                                             "flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all aspect-square",
-                                                            settings?.businessInfo.logoPosition === pos.id
+                                                            settings?.businessInfo?.logoPosition === pos.id
                                                                 ? "border-primary bg-primary/5 text-primary"
                                                                 : "border-border bg-surface-muted text-muted-foreground hover:border-primary/20"
                                                         )}
@@ -372,7 +372,7 @@ const SettingsScreen: React.FC = () => {
                                         <div className="flex items-center gap-2">
                                             <span className="text-[10px] font-bold text-muted-foreground">إظهار</span>
                                             <Switch
-                                                checked={settings?.businessInfo.showLogo2 ?? false}
+                                                checked={settings?.businessInfo?.showLogo2 ?? false}
                                                 onCheckedChange={(val) => updateBusinessInfo('showLogo2' as any, val as any)}
                                                 className="scale-75"
                                             />
@@ -442,7 +442,7 @@ const SettingsScreen: React.FC = () => {
                                                         onClick={() => updateBusinessInfo('logo2Position' as any, pos.id)}
                                                         className={cn(
                                                             "flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all aspect-square",
-                                                            settings?.businessInfo.logo2Position === pos.id
+                                                            settings?.businessInfo?.logo2Position === pos.id
                                                                 ? "border-primary bg-primary/5 text-primary"
                                                                 : "border-border bg-surface-muted text-muted-foreground hover:border-primary/20"
                                                         )}
@@ -474,7 +474,7 @@ const SettingsScreen: React.FC = () => {
                                                 <span className="text-sm font-black text-foreground">{item.label}</span>
                                             </div>
                                             <Switch
-                                                checked={(settings?.businessInfo as any)[item.id] ?? true}
+                                                checked={settings?.businessInfo ? (settings.businessInfo as any)[item.id] : true}
                                                 onCheckedChange={(val) => {
                                                     if (!settings) return;
                                                     setSettings({
