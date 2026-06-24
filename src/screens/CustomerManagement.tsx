@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { CustomerService } from '../services/CustomerService';
 import { Customer, CustomerInput, Invoice } from '../types/models';
 import { showToast } from '../utils/toast';
@@ -51,6 +53,7 @@ import { Badge } from '../components/ui/badge';
 import { useSearchParams } from 'react-router-dom';
 
 const CustomerManagement: React.FC = () => {
+  const { t } = useTranslation();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -108,21 +111,21 @@ const CustomerManagement: React.FC = () => {
   const printService = useMemo(() => new PrintService(), []);
 
   const handleSaveListPDF = async () => {
-    showToast.info('جاري تجهيز تقرير العملاء...');
+    showToast.info(t('customers.toastPreparingPdf'));
     try {
       if (!settings) return;
 
       const htmlContent = `
         <div dir="rtl" style="font-family: Arial, sans-serif; padding: 40px;">
-          <h1 style="text-align: center; color: #4f46e5; margin-bottom: 20px;">تقرير قائمة العملاء</h1>
-          <p style="text-align: center; color: #6b7280; margin-bottom: 30px;">التاريخ: ${new Date().toLocaleDateString('ar-SA')}</p>
+          <h1 style="text-align: center; color: #4f46e5; margin-bottom: 20px;">${t('customers.pdfTitle')}</h1>
+          <p style="text-align: center; color: #6b7280; margin-bottom: 30px;">${t('invoices.dateTime')}: ${new Date().toLocaleDateString(i18n.language === 'ar' ? 'ar-EG' : i18n.language)}</p>
           <table style="width: 100%; border-collapse: collapse; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             <thead>
               <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">اسم العميل</th>
-                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">رقم الهاتف</th>
-                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">الرصيد الافتتاحي</th>
-                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">الرصيد الحالي</th>
+                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">${t('customers.customer')}</th>
+                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">${t('customers.phone')}</th>
+                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">${t('customers.totalPurchases')}</th>
+                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">${t('customers.totalPurchases')}</th>
               </tr>
             </thead>
             <tbody>
@@ -142,33 +145,33 @@ const CustomerManagement: React.FC = () => {
       await printService.saveHtmlAsPDF(htmlContent, {
         filename: `customer-list-${new Date().getTime()}.pdf`
       });
-      showToast.success('تم حفظ التقرير بنجاح');
+      showToast.success(t('customers.toastPdfSaved'));
     } catch (error) {
       console.error('PDF error:', error);
-      showToast.error('فشل في حفظ التقرير');
+      showToast.error(t('customers.toastPdfFailed'));
     }
   };
 
   const handleSaveHistoryPDF = async () => {
     if (!viewingHistory || !settings) return;
-    showToast.info('جاري تحضير ملف PDF...');
+    showToast.info(t('customers.toastPreparingHistory'));
     try {
       const htmlContent = `
         <div dir="rtl" style="font-family: Arial, sans-serif; padding: 40px;">
-          <h1 style="text-align: center; color: #4f46e5; margin-bottom: 10px;">سجل مشتريات العميل</h1>
-          <h3 style="text-align: center; color: #1e293b; margin-bottom: 30px;">العميل: ${viewingHistory.name}</h3>
+          <h1 style="text-align: center; color: #4f46e5; margin-bottom: 10px;">${t('customers.pdfHistoryTitle')}</h1>
+          <h3 style="text-align: center; color: #1e293b; margin-bottom: 30px;">${t('customers.customer')}: ${viewingHistory.name}</h3>
           <table style="width: 100%; border-collapse: collapse; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             <thead>
               <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">التاريخ</th>
-                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">رقم الفاتورة</th>
-                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">المبلغ</th>
+                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">${t('invoices.dateTime')}</th>
+                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">${t('invoices.invoiceNumber')}</th>
+                <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">${t('invoices.amount')}</th>
               </tr>
             </thead>
             <tbody>
               ${purchaseHistory.map(h => `
                 <tr style="border-bottom: 1px solid #e2e8f0;">
-                  <td style="padding: 12px; border: 1px solid #e2e8f0;">${new Date(h.createdAt).toLocaleDateString('ar-SA')}</td>
+                   <td style="padding: 12px; border: 1px solid #e2e8f0;">${new Date(h.createdAt).toLocaleDateString(i18n.language === 'ar' ? 'ar-EG' : i18n.language)}</td>
                   <td style="padding: 12px; border: 1px solid #e2e8f0;">${h.invoiceNumber || h.id}</td>
                   <td style="padding: 12px; border: 1px solid #e2e8f0;">${h.totalAmount.toLocaleString()}</td>
                 </tr>
@@ -181,10 +184,10 @@ const CustomerManagement: React.FC = () => {
       await printService.saveHtmlAsPDF(htmlContent, {
         filename: `history-${viewingHistory.name}-${new Date().getTime()}.pdf`
       });
-      showToast.success('تم حفظ السجل بنجاح');
+      showToast.success(t('customers.toastPdfSaved'));
     } catch (error) {
       console.error('History PDF error:', error);
-      showToast.error('خطأ في حفظ الملف');
+      showToast.error(t('customers.toastPdfError'));
     }
   };
 
@@ -218,10 +221,10 @@ const CustomerManagement: React.FC = () => {
   };
 
   const getPricingTypeName = React.useCallback((type: string) => {
-    if (type === 'wholesale') return settings?.pricingOpts?.tier2Name || 'جملة';
-    if (type === 'retail') return settings?.pricingOpts?.tier1Name || 'قطاعي';
-    return settings?.pricingOpts?.customTiers?.find(t => t.id === type)?.name || 'مخصص';
-  }, [settings]);
+    if (type === 'wholesale') return settings?.pricingOpts?.tier2Name || t('pos.tier2Default');
+    if (type === 'retail') return settings?.pricingOpts?.tier1Name || t('pos.tier1Default');
+    return settings?.pricingOpts?.customTiers?.find(t => t.id === type)?.name || t('pos.otherPrice');
+  }, [settings, t]);
 
   const loadCustomers = async () => {
     const response = await customerService.getAllCustomers();
@@ -290,7 +293,7 @@ const CustomerManagement: React.FC = () => {
 
     if (response.success) {
       showToast.success(
-        editingCustomer ? 'تم تحديث العميل بنجاح' : 'تم إضافة العميل بنجاح'
+        editingCustomer ? t('customers.toastUpdated') : t('customers.toastAdded')
       );
       handleCloseModal();
       loadCustomers();
@@ -318,7 +321,7 @@ const CustomerManagement: React.FC = () => {
     const response = await customerService.deleteCustomer(deletingCustomer.id);
 
     if (response.success) {
-      showToast.success('تم حذف العميل بنجاح');
+      showToast.success(t('customers.toastDeleted'));
       handleCloseDeleteModal();
       loadCustomers();
     } else {
@@ -349,8 +352,8 @@ const CustomerManagement: React.FC = () => {
       {/* Header section with Stats - Bento Style */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
         <div>
-          <h1 className="text-4xl font-black text-foreground tracking-tight mb-1 font-tajawal">إدارة العملاء</h1>
-          <p className="text-muted-foreground font-medium font-tajawal">نظرة عامة على قاعدة البيانات والنشاط</p>
+          <h1 className="text-4xl font-black text-foreground tracking-tight mb-1 font-tajawal">{t('customers.pageTitle')}</h1>
+          <p className="text-muted-foreground font-medium font-tajawal">{t('customers.pageDesc')}</p>
         </div>
         <div className="flex items-center gap-3">
           <Button
@@ -358,7 +361,7 @@ const CustomerManagement: React.FC = () => {
             className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-6 py-6 h-auto shadow-lg shadow-indigo-100 transition-all active:scale-95 group font-tajawal"
           >
             <Plus className="w-5 h-5 ml-2 group-hover:rotate-90 transition-transform duration-300" />
-            <span className="text-lg font-bold">إضافة عميل جديد</span>
+            <span className="text-lg font-bold">{t('customers.addNewCustomer')}</span>
           </Button>
           {settings && (
             <Button
@@ -367,7 +370,7 @@ const CustomerManagement: React.FC = () => {
               className="rounded-xl px-6 py-6 h-auto border-border hover:bg-surface-muted transition-all font-tajawal gap-2"
             >
               <FileText className="w-5 h-5 text-muted-foreground group-hover:text-indigo-600" />
-              <span className="text-lg font-bold text-foreground">حفظ كـ PDF</span>
+              <span className="text-lg font-bold text-foreground">{t('customers.saveAsPdf')}</span>
             </Button>
           )}
         </div>
@@ -403,12 +406,12 @@ const CustomerManagement: React.FC = () => {
                 <UsersRound className="w-6 h-6 text-indigo-600" />
               </div>
               <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-bold font-tajawal">
-                الإجمالي
+                {t('customers.totalCustomersCard')}
               </Badge>
             </div>
             <div className="mt-4">
               <h3 className="text-3xl font-black text-foreground">{stats.total}</h3>
-              <p className="text-muted-foreground text-sm font-medium mt-1 font-tajawal">مشترك في النظام</p>
+              <p className="text-muted-foreground text-sm font-medium mt-1 font-tajawal">{t('customers.subscribed')}</p>
             </div>
           </CardContent>
         </Card>
@@ -421,12 +424,12 @@ const CustomerManagement: React.FC = () => {
                 <UserPlus className="w-6 h-6 text-emerald-600" />
               </div>
               <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-none font-bold font-tajawal">
-                اليوم
+                {t('customers.newToday')}
               </Badge>
             </div>
             <div className="mt-4">
               <h3 className="text-3xl font-black text-foreground">+{stats.newToday}</h3>
-              <p className="text-muted-foreground text-sm font-medium mt-1 font-tajawal">عملاء جدد</p>
+              <p className="text-muted-foreground text-sm font-medium mt-1 font-tajawal">{t('customers.newCustomers')}</p>
             </div>
           </CardContent>
         </Card>
@@ -439,12 +442,12 @@ const CustomerManagement: React.FC = () => {
                 <TrendingUp className="w-6 h-6 text-amber-600" />
               </div>
               <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-none font-bold font-tajawal">
-                كبار العملاء
+                {t('customers.highValue')}
               </Badge>
             </div>
             <div className="mt-4">
               <h3 className="text-3xl font-black text-foreground">{stats.highValue}</h3>
-              <p className="text-muted-foreground text-sm font-medium mt-1 font-tajawal">أكثر من 5000 ج.م</p>
+              <p className="text-muted-foreground text-sm font-medium mt-1 font-tajawal">{t('customers.highValueDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -457,12 +460,12 @@ const CustomerManagement: React.FC = () => {
                 <UserCheck className="w-6 h-6 text-rose-600" />
               </div>
               <Badge variant="secondary" className="bg-rose-50 text-rose-700 border-none font-bold font-tajawal">
-                نشطين
+                {t('customers.active')}
               </Badge>
             </div>
             <div className="mt-4">
               <h3 className="text-3xl font-black text-foreground">{stats.activeWithPurchases}</h3>
-              <p className="text-muted-foreground text-sm font-medium mt-1 font-tajawal">لديهم مشتريات</p>
+              <p className="text-muted-foreground text-sm font-medium mt-1 font-tajawal">{t('customers.havePurchases')}</p>
             </div>
           </CardContent>
         </Card>
@@ -474,12 +477,12 @@ const CustomerManagement: React.FC = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <CardTitle className="text-2xl font-black text-foreground flex items-center gap-3 font-tajawal">
               <div className="h-8 w-2 bg-indigo-600 rounded-full" />
-              قائمة العملاء
+              {t('customers.customerList')}
             </CardTitle>
             <div className="relative w-full md:w-96 group">
               <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-indigo-600 transition-colors" />
               <Input
-                placeholder="البحث بالاسم، الهاتف..."
+                placeholder={t('customers.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pr-12 h-12 bg-surface-muted border-border rounded-2xl focus-visible:ring-indigo-600 transition-all font-medium font-tajawal text-foreground"
@@ -493,10 +496,10 @@ const CustomerManagement: React.FC = () => {
             <Table>
               <TableHeader className="bg-surface-muted/50 border-b border-border">
                 <TableRow>
-                  <TableHead className="text-right text-muted-foreground font-black text-[10px] uppercase tracking-wider h-14 pr-8 font-tajawal">العميل</TableHead>
-                  <TableHead className="text-right text-muted-foreground font-black text-[10px] uppercase tracking-wider h-14 font-tajawal">الهاتف</TableHead>
-                  <TableHead className="text-right text-muted-foreground font-black text-[10px] uppercase tracking-wider h-14 font-tajawal">إجمالي المشتريات</TableHead>
-                  <TableHead className="text-center font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6">الإجراءات</TableHead>
+                  <TableHead className="text-right text-muted-foreground font-black text-[10px] uppercase tracking-wider h-14 pr-8 font-tajawal">{t('customers.customer')}</TableHead>
+                  <TableHead className="text-right text-muted-foreground font-black text-[10px] uppercase tracking-wider h-14 font-tajawal">{t('customers.phone')}</TableHead>
+                  <TableHead className="text-right text-muted-foreground font-black text-[10px] uppercase tracking-wider h-14 font-tajawal">{t('customers.totalPurchases')}</TableHead>
+                  <TableHead className="text-center font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6">{t('customers.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -508,8 +511,8 @@ const CustomerManagement: React.FC = () => {
                           <UsersRound className="w-12 h-12 text-muted-foreground/30" />
                         </div>
                         <div>
-                          <p className="text-xl font-bold text-foreground">{searchTerm ? 'لا توجد نتائج بحث' : 'لا يوجد عملاء بعد'}</p>
-                          <p className="text-muted-foreground">ابدأ بإضافة عملاء جدد إلى قاعدة البيانات الخاصة بك</p>
+                          <p className="text-xl font-bold text-foreground">{searchTerm ? t('customers.noResults') : t('customers.noCustomers')}</p>
+                          <p className="text-muted-foreground">{t('customers.addCustomersHint')}</p>
                         </div>
                       </div>
                     </TableCell>
@@ -524,18 +527,20 @@ const CustomerManagement: React.FC = () => {
                           </div>
                           <div>
                             <div className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{customer.name}</div>
-                            <div className="text-xs text-slate-500 font-medium">{customer.email || 'بدون بريد إلكتروني'}</div>
+                            {customer.email && <div className="text-xs text-slate-500 font-medium">{customer.email}</div>}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="py-4">
-                        <div className="flex items-center gap-2 font-bold text-slate-700 font-tajawal">
-                          <span className="p-1.5 bg-surface-muted rounded-lg"><Users className="w-4 h-4 text-muted-foreground" /></span>
-                          {customer.phone || 'بدون هاتف'}
-                        </div>
+                        {customer.phone && (
+                          <div className="flex items-center gap-2 font-bold text-slate-700 font-tajawal">
+                            <span className="p-1.5 bg-surface-muted rounded-lg"><Users className="w-4 h-4 text-muted-foreground" /></span>
+                            {customer.phone}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="py-4 font-black text-foreground font-tajawal">
-                        {(customer.totalPurchases || 0).toLocaleString('ar-EG', { style: 'currency', currency: 'EGP' })}
+                        {(customer.totalPurchases || 0).toLocaleString(i18n.language === 'ar' ? 'ar-EG' : i18n.language === 'fa' ? 'fa-IR' : i18n.language, { style: 'currency', currency: t('common.currency') })}
                       </TableCell>
                       <TableCell className="py-4 text-center">
                         <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -574,7 +579,7 @@ const CustomerManagement: React.FC = () => {
         </CardContent>
 
         <div className="p-6 bg-surface-muted/50 border-t border-border flex justify-between items-center text-xs font-bold text-muted-foreground uppercase font-tajawal">
-          <span>إجمالي السجلات: {filteredCustomers.length}</span>
+          <span>{t('customers.totalRecords', { count: filteredCustomers.length })}</span>
         </div>
       </Card>
 
@@ -583,10 +588,10 @@ const CustomerManagement: React.FC = () => {
         <DialogContent className="max-w-xl p-0 overflow-hidden rounded-3xl border-none shadow-2xl font-tajawal bg-surface-bg">
           <DialogHeader className="p-8 bg-surface-muted border-b border-border">
             <DialogTitle className="text-2xl font-black text-foreground">
-              {editingCustomer ? 'تحديث بيانات العميل' : 'إضافة عميل جديد'}
+              {editingCustomer ? t('customers.editTitle') : t('customers.addTitle')}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-medium">
-              أدخل تفاصيل العميل أدناه. الحقول المميزة بـ * مطلوبة.
+              {t('customers.addDesc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -599,58 +604,58 @@ const CustomerManagement: React.FC = () => {
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-black text-foreground/70 pr-2">الاسم الكامل *</label>
+                <label className="text-sm font-black text-foreground/70 pr-2">{t('customers.fullName')}</label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="مثال: محمد علي"
+                  placeholder={t('customers.fullNamePlaceholder')}
                   className="h-12 bg-surface-muted border-border rounded-xl focus-visible:ring-indigo-600 text-foreground"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-black text-foreground/70 pr-2">رقم الهاتف</label>
+                <label className="text-sm font-black text-foreground/70 pr-2">{t('customers.phoneLabel')}</label>
                 <Input
                   value={formData.phone || ''}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="01xxxxxxxxx"
+                  placeholder={t('customers.phonePlaceholder')}
                   className="h-12 bg-surface-muted border-border rounded-xl focus-visible:ring-indigo-600 text-foreground"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-black text-foreground/70 pr-2">البريد الإلكتروني</label>
+                <label className="text-sm font-black text-foreground/70 pr-2">{t('customers.emailLabel')}</label>
                 <Input
                   type="email"
                   value={formData.email || ''}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="example@email.com"
+                  placeholder={t('customers.emailPlaceholder')}
                   className="h-12 bg-surface-muted border-border rounded-xl focus-visible:ring-indigo-600 text-foreground"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-black text-foreground/70 pr-2">العنوان</label>
+                <label className="text-sm font-black text-foreground/70 pr-2">{t('customers.addressLabel')}</label>
                 <Input
                   value={formData.address || ''}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="القاهرة، مصر"
+                  placeholder={t('customers.addressPlaceholder')}
                   className="h-12 bg-surface-muted border-border rounded-xl focus-visible:ring-indigo-600 text-foreground"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-black text-foreground/70 pr-2">ملاحظات إضافية</label>
+              <label className="text-sm font-black text-foreground/70 pr-2">{t('customers.notesLabel')}</label>
               <Input
                 value={formData.notes || ''}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="أي معلومات إضافية عن العميل"
+                placeholder={t('customers.notesPlaceholder')}
                 className="h-12 bg-surface-muted border-border rounded-xl focus-visible:ring-indigo-600 text-foreground"
               />
             </div>
           </div>
 
           <DialogFooter className="p-8 bg-surface-muted border-t border-border gap-3">
-            <Button variant="outline" onClick={handleCloseModal} className="rounded-xl font-bold h-12 px-6 border-border text-foreground hover:bg-surface-bg">إلغاء</Button>
+            <Button variant="outline" onClick={handleCloseModal} className="rounded-xl font-bold h-12 px-6 border-border text-foreground hover:bg-surface-bg">{t('customers.cancel')}</Button>
             <Button onClick={handleSubmit} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold h-12 px-8">
-              {editingCustomer ? 'حفظ التغييرات' : 'تأكيد الإضافة'}
+              {editingCustomer ? t('customers.saveChanges') : t('customers.confirmAdd')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -665,14 +670,14 @@ const CustomerManagement: React.FC = () => {
                 <Trash2 className="w-12 h-12 text-rose-600" />
               </div>
             </div>
-            <DialogTitle className="text-center text-2xl font-black text-foreground">تأكيد الحذف</DialogTitle>
+            <DialogTitle className="text-center text-2xl font-black text-foreground">{t('customers.deleteTitle')}</DialogTitle>
             <DialogDescription className="text-center text-muted-foreground font-medium pt-2">
-              هل أنت متأكد من حذف العميل <span className="text-rose-600 font-bold">{deletingCustomer?.name}</span>؟ لا يمكن التراجع عن هذا الإجراء.
+              {t('customers.deleteConfirm', { name: deletingCustomer?.name })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-row gap-3 pt-6">
-            <Button variant="outline" onClick={handleCloseDeleteModal} className="w-full rounded-xl font-bold h-12 border-border text-foreground">تراجع</Button>
-            <Button variant="destructive" onClick={handleDelete} className="w-full bg-rose-600 hover:bg-rose-700 rounded-xl font-bold h-12">حذف نهائياً</Button>
+            <Button variant="outline" onClick={handleCloseDeleteModal} className="w-full rounded-xl font-bold h-12 border-border text-foreground">{t('customers.back')}</Button>
+            <Button variant="destructive" onClick={handleDelete} className="w-full bg-rose-600 hover:bg-rose-700 rounded-xl font-bold h-12">{t('customers.deletePermanent')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -684,10 +689,10 @@ const CustomerManagement: React.FC = () => {
             <div className="space-y-1">
               <DialogTitle className="text-2xl font-black text-foreground flex items-center gap-3">
                 <History className="w-6 h-6 text-indigo-600" />
-                سجل مشتريات {viewingHistory?.name}
+                {t('customers.historyFor', { name: viewingHistory?.name })}
               </DialogTitle>
               <DialogDescription className="text-muted-foreground font-medium">
-                قائمة بجميع الفواتير السابقة المرتبطة بهذا العميل
+                {t('customers.historyDesc')}
               </DialogDescription>
             </div>
             {purchaseHistory.length > 0 && (
@@ -698,7 +703,7 @@ const CustomerManagement: React.FC = () => {
                 className="gap-2 rounded-xl px-4 py-5 font-bold border-border hover:bg-surface-bg transition-all text-indigo-600 border-indigo-100 bg-indigo-50/30"
               >
                 <FileText className="w-4 h-4" />
-                حفظ السجل PDF
+                {t('customers.saveHistoryPDF')}
               </Button>
             )}
           </DialogHeader>
@@ -707,7 +712,7 @@ const CustomerManagement: React.FC = () => {
             {purchaseHistory.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-12 text-center space-y-4">
                 <FileText className="w-16 h-16 text-muted-foreground/20" />
-                <p className="text-lg font-bold text-muted-foreground/50">لا توجد فواتير سابقة لهذا العميل</p>
+                <p className="text-lg font-bold text-muted-foreground/50">{t('customers.noHistory')}</p>
               </div>
             ) : (
               purchaseHistory.map((invoice) => (
@@ -721,14 +726,14 @@ const CustomerManagement: React.FC = () => {
                     </div>
                     <div className="text-sm text-muted-foreground font-medium flex items-center gap-2">
                       <ArrowRightLeft className="w-4 h-4" />
-                      {invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString('ar-EG', { dateStyle: 'long' }) : 'التاريخ غير موجود'}
+                      {invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString(i18n.language === 'ar' ? 'ar-EG' : i18n.language === 'fa' ? 'fa-IR' : i18n.language, { dateStyle: 'long' }) : t('common.noData')}
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-black text-indigo-500 group-hover:scale-110 transition-transform origin-left">
-                      {(invoice.totalAmount || 0).toLocaleString('ar-EG', { style: 'currency', currency: 'EGP' })}
+                      {(invoice.totalAmount || 0).toLocaleString(i18n.language === 'ar' ? 'ar-EG' : i18n.language === 'fa' ? 'fa-IR' : i18n.language, { style: 'currency', currency: t('common.currency') })}
                     </div>
-                    <div className="text-xs text-muted-foreground font-bold uppercase">{invoice.paymentMethod || 'نقدي'}</div>
+                    <div className="text-xs text-muted-foreground font-bold uppercase">{invoice.paymentMethod || t('common.no')}</div>
                   </div>
                 </div>
               ))
@@ -736,7 +741,7 @@ const CustomerManagement: React.FC = () => {
           </div>
 
           <DialogFooter className="p-8 bg-surface-muted border-t border-border">
-            <Button variant="outline" onClick={handleCloseHistoryModal} className="w-full rounded-xl font-bold h-12 border-border text-foreground">إغلاق النافذة</Button>
+            <Button variant="outline" onClick={handleCloseHistoryModal} className="w-full rounded-xl font-bold h-12 border-border text-foreground">{t('customers.closeWindow')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

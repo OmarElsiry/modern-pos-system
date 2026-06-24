@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Delete, Check, ShoppingBag, DollarSign, Hash } from 'lucide-react';
 import { toArabicWords } from '@/utils/tafqeet';
@@ -32,6 +33,7 @@ export const Numpad: React.FC<NumpadProps> = ({
     variant = 'overlay',
     style,
 }) => {
+    const { t } = useTranslation();
     if (!isOpen) return null;
 
     const buttons = [
@@ -73,7 +75,7 @@ export const Numpad: React.FC<NumpadProps> = ({
                         <Delete className="h-5 w-5 mx-auto" />
                     </NumpadButton>
                     <NumpadButton onClick={onClear} className="text-destructive bg-destructive/10 hover:bg-destructive/20">
-                        C
+                        {t('common.clear')}
                     </NumpadButton>
                     <NumpadButton onClick={onConfirm} className="bg-primary text-primary-foreground hover:bg-primary/90">
                         <Check className="h-5 w-5 mx-auto" />
@@ -101,8 +103,8 @@ export const Numpad: React.FC<NumpadProps> = ({
                             <ShoppingBag className="h-6 w-6" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h2 className="text-xl font-black text-slate-900 truncate">{itemName || 'منتج غير معروف'}</h2>
-                            <p className="text-slate-500 font-bold text-sm">سعر الوحدة: {itemPrice?.toFixed(2)} ج.م</p>
+                            <h2 className="text-xl font-black text-slate-900 truncate">{itemName || t('numpad.unknownProduct')}</h2>
+                            <p className="text-slate-500 font-bold text-sm">{t('numpad.unitPrice')}: {itemPrice?.toFixed(2)} {t('pos.currencySymbol')}</p>
                         </div>
                     </div>
 
@@ -110,7 +112,7 @@ export const Numpad: React.FC<NumpadProps> = ({
                         <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm transition-all">
                             <div className="flex items-center gap-2 text-slate-400 mb-1">
                                 <Hash size={14} className="font-black" />
-                                <span className="text-[10px] font-black uppercase tracking-wider">الكمية المضافة</span>
+                                <span className="text-[10px] font-black uppercase tracking-wider">{t('numpad.qtyAdded')}</span>
                             </div>
                             <div className="text-3xl font-black text-slate-900 leading-none">
                                 {currentQuantity || '0'}
@@ -122,17 +124,17 @@ export const Numpad: React.FC<NumpadProps> = ({
                                         ? "bg-red-50 text-red-600"
                                         : "bg-blue-50 text-blue-600"
                                 )}>
-                                    المتاح: {maxStock}
+                                    {t('numpad.available')}: {maxStock}
                                 </div>
                             )}
                         </div>
                         <div className="bg-indigo-600 p-4 rounded-2xl shadow-lg shadow-indigo-200 dark:shadow-none transition-all">
                             <div className="flex items-center gap-2 text-indigo-100 mb-1">
                                 <DollarSign size={14} className="font-black" />
-                                <span className="text-[10px] font-black uppercase tracking-wider">إجمالي القيمة</span>
+                                <span className="text-[10px] font-black uppercase tracking-wider">{t('numpad.totalValue')}</span>
                             </div>
                             <div className="text-3xl font-black text-white leading-none">
-                                {totalValue.toFixed(0)} <span className="text-xs">ج.م</span>
+                                {totalValue.toFixed(0)} <span className="text-xs">{t('pos.currencySymbol')}</span>
                             </div>
                         </div>
                     </div>
@@ -158,7 +160,7 @@ export const Numpad: React.FC<NumpadProps> = ({
                             onClick={onClear}
                             className="h-14 rounded-2xl font-black text-red-500 bg-red-50 border-red-100 hover:bg-red-100 transition-all"
                         >
-                            C
+                            {t('common.clear')}
                         </NumpadButton>
                         <NumpadButton
                             onClick={onBackspace}
@@ -176,7 +178,7 @@ export const Numpad: React.FC<NumpadProps> = ({
 
                     {/* Footer: Tafqeet */}
                     <div className="bg-slate-50/50 p-4 rounded-2xl border border-dashed border-slate-200 text-center">
-                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1">المبلغ بالتفقيط</p>
+                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1">{t('numpad.amountInWords')}</p>
                         <p className="text-sm font-bold text-slate-700 leading-relaxed">
                             {toArabicWords(totalValue)}
                         </p>

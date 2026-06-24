@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Invoice, InvoiceItem, Customer, BusinessInfo, InvoiceTemplate } from '../types/models';
 import { PrintService } from '../services/PrintService';
 import { SettingsService } from '../services/SettingsService';
@@ -19,6 +20,7 @@ const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
   customer,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [template, setTemplate] = useState<InvoiceTemplate | undefined>();
@@ -65,8 +67,8 @@ const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
     <div className="receipt-preview-overlay" onClick={onClose}>
       <div className="receipt-preview-modal" onClick={(e) => e.stopPropagation()}>
         <div className="receipt-preview-header">
-          <h3>معاينة الفاتورة</h3>
-          <button className="close-button" onClick={onClose}>
+          <h3>{t('receiptPreview.title')}</h3>
+          <button className="close-button" onClick={onClose} aria-label={t('common.close')}>
             <X size={20} />
           </button>
         </div>
@@ -75,7 +77,7 @@ const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
           {loading ? (
             <div className="loading-preview">
               <Loader2 className="animate-spin text-indigo-500" size={32} />
-              <span>جاري تحضير المعاينة...</span>
+              <span>{t('receiptPreview.preparing')}</span>
             </div>
           ) : (
             <iframe
@@ -88,10 +90,10 @@ const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
 
         <div className="receipt-preview-actions">
           <Button onClick={handlePrint} variant="default" className="primary">
-            <Printer size={18} /> طباعة
+            <Printer size={18} /> {t('receiptPreview.print')}
           </Button>
           <Button onClick={handleDownload} variant="default" className="primary bg-slate-800 hover:bg-slate-900">
-            <Download size={18} /> تحميل PDF
+            <Download size={18} /> {t('receiptPreview.title')} PDF
           </Button>
         </div>
       </div>

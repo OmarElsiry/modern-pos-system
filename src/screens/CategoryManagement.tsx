@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CategoryService } from '../services/CategoryService';
 import { Category, CategoryInput } from '../types/models';
 import { showToast } from '../utils/toast';
@@ -29,6 +30,7 @@ import { Label } from "@/components/ui/label";
 import { useSearchParams } from 'react-router-dom';
 
 const CategoryManagement: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -90,7 +92,7 @@ const CategoryManagement: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!formData.name.trim()) {
-      showToast.error('اسم الفئة مطلوب');
+      showToast.error(t('categories.toastNameRequired'));
       return;
     }
 
@@ -102,7 +104,7 @@ const CategoryManagement: React.FC = () => {
     }
 
     if (response.success) {
-      showToast.success(editingCategory ? 'تم تحديث الفئة بنجاح' : 'تم إضافة الفئة بنجاح');
+      showToast.success(editingCategory ? t('categories.toastUpdated') : t('categories.toastAdded'));
       setIsModalOpen(false);
       loadCategories();
     } else {
@@ -114,7 +116,7 @@ const CategoryManagement: React.FC = () => {
     if (!deletingCategory) return;
     const response = await categoryService.deleteCategory(deletingCategory.id);
     if (response.success) {
-      showToast.success('تم حذف الفئة بنجاح');
+      showToast.success(t('categories.toastDeleted'));
       setIsDeleteModalOpen(false);
       loadCategories();
     } else {
@@ -130,17 +132,17 @@ const CategoryManagement: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold w-fit mb-4">
             <Layers size={14} />
-            <span>تنظيم البيانات</span>
+            <span>{t('categories.badge')}</span>
           </div>
-          <h1 className="text-4xl font-black text-slate-900 mb-2">إدارة التصنيفات</h1>
-          <p className="text-slate-500 font-medium">تنظيم المنتجات في فئات لسهولة الوصول إليها وإدارتها</p>
+          <h1 className="text-4xl font-black text-slate-900 mb-2">{t('categories.pageTitle')}</h1>
+          <p className="text-slate-500 font-medium">{t('categories.pageDesc')}</p>
         </div>
         <Button
           onClick={() => handleOpenModal()}
           className="h-14 px-8 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-lg font-black gap-2 transition-none"
         >
           <Plus size={24} />
-          إضافة تصنيف جديد
+          {t('categories.addCategory')}
         </Button>
       </div>
 
@@ -158,10 +160,10 @@ const CategoryManagement: React.FC = () => {
               <FolderOpen size={48} strokeWidth={1} />
             </div>
             <div>
-              <h3 className="text-2xl font-black text-slate-900 mb-2">لا يوجد تصنيفات حالياً</h3>
-              <p className="text-slate-500 font-medium">ابدأ بإضافة أول تصنيف لتنظيم منتجاتك بشكل احترافي</p>
+              <h3 className="text-2xl font-black text-slate-900 mb-2">{t('categories.noCategories')}</h3>
+              <p className="text-slate-500 font-medium">{t('categories.addCategoriesHint')}</p>
             </div>
-            <Button onClick={() => handleOpenModal()} variant="outline" className="h-12 px-8 rounded-xl border-slate-200 font-bold">إضافة أول تصنيف</Button>
+            <Button onClick={() => handleOpenModal()} variant="outline" className="h-12 px-8 rounded-xl border-slate-200 font-bold">{t('categories.addFirst')}</Button>
           </div>
         </Card>
       ) : (
@@ -187,13 +189,13 @@ const CategoryManagement: React.FC = () => {
                 </div>
                 <CardTitle className="text-2xl font-black text-slate-900 mt-4">{category.name}</CardTitle>
                 <CardDescription className="text-slate-500 font-medium line-clamp-2 min-h-[3rem]">
-                  {category.description || 'لا يوجد وصف لهذا التصنيف'}
+                  {category.description || t('categories.noDescription')}
                 </CardDescription>
               </CardHeader>
               <CardFooter className="p-8 pt-4 mt-auto border-t border-slate-50 flex items-center gap-4 text-xs font-bold text-slate-400">
                 <div className="flex items-center gap-1.5">
                   <Calendar size={14} />
-                  <span>{new Date(category.createdAt).toLocaleDateString('ar-EG')}</span>
+                  <span>{new Date(category.createdAt).toLocaleDateString(i18n.language)}</span>
                 </div>
               </CardFooter>
             </Card>
@@ -210,37 +212,37 @@ const CategoryManagement: React.FC = () => {
                 <div className="p-2 bg-white/20 rounded-xl">
                   {editingCategory ? <Edit size={24} /> : <Plus size={24} />}
                 </div>
-                <DialogTitle className="text-3xl font-black">{editingCategory ? 'تعديل التصنيف' : 'إضافة تصنيف جديد'}</DialogTitle>
+                <DialogTitle className="text-3xl font-black">{editingCategory ? t('categories.editTitle') : t('categories.addTitle')}</DialogTitle>
               </div>
-              <DialogDescription className="text-slate-200 opacity-80">أدخل تفاصيل التصنيف لتنظيم منتجاتك بشكل أفضل</DialogDescription>
+              <DialogDescription className="text-slate-200 opacity-80">{t('categories.addDesc')}</DialogDescription>
             </DialogHeader>
 
             <div className="p-8 space-y-6">
               <div className="space-y-2">
-                <Label className="font-bold text-slate-700 pr-1">اسم التصنيف</Label>
+                <Label className="font-bold text-slate-700 pr-1">{t('categories.categoryName')}</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="h-12 rounded-xl text-lg font-bold"
-                  placeholder="مثال: الملابس، الإلكترونيات..."
+                  placeholder={t('categories.categoryNamePlaceholder')}
                 />
               </div>
               <div className="space-y-2">
-                <Label className="font-bold text-slate-700 pr-1">الوصف</Label>
+                <Label className="font-bold text-slate-700 pr-1">{t('categories.description')}</Label>
                 <textarea
                   value={formData.description || ''}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full min-h-[120px] p-4 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium"
-                  placeholder="اكتب وصفاً مختصراً لهذا التصنيف..."
+                  placeholder={t('categories.descriptionPlaceholder')}
                 />
               </div>
             </div>
 
             <DialogFooter className="p-8 pt-0 flex gap-4">
               <Button onClick={handleSubmit} className="flex-1 h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 font-black text-lg">
-                {editingCategory ? 'حفظ التعديلات' : 'إضافة التصنيف'}
+                {editingCategory ? t('categories.saveChanges') : t('categories.addCategory')}
               </Button>
-              <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 h-14 rounded-2xl border-slate-200 font-bold">إلغاء</Button>
+              <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 h-14 rounded-2xl border-slate-200 font-bold">{t('categories.cancel')}</Button>
             </DialogFooter>
           </div>
         </DialogContent>
@@ -253,14 +255,14 @@ const CategoryManagement: React.FC = () => {
             <AlertTriangle size={40} />
           </div>
           <div>
-            <h3 className="text-2xl font-black text-slate-900 mb-2">تأكيد الحذف</h3>
+            <h3 className="text-2xl font-black text-slate-900 mb-2">{t('categories.deleteTitle')}</h3>
             <p className="text-slate-500 font-medium">
-              هل أنت متأكد من حذف تصنيف <span className="text-red-600 font-black">"{deletingCategory?.name}"</span>؟ لا يمكن حذف التصنيف إذا كان يحتوي على منتجات.
+              {t('categories.deleteConfirm', { name: deletingCategory?.name })}
             </p>
           </div>
           <div className="flex gap-3">
-            <Button variant="destructive" onClick={handleDelete} className="flex-1 h-12 rounded-xl font-black">حذف نهائياً</Button>
-            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)} className="flex-1 h-12 rounded-xl font-bold">تراجع</Button>
+            <Button variant="destructive" onClick={handleDelete} className="flex-1 h-12 rounded-xl font-black">{t('categories.deletePermanent')}</Button>
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)} className="flex-1 h-12 rounded-xl font-bold">{t('categories.cancel')}</Button>
           </div>
         </DialogContent>
       </Dialog>

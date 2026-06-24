@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Product } from '@/types/models';
 import {
     Dialog,
@@ -32,17 +33,17 @@ interface LabelPrintModalProps {
 type LabelSize = '48x24' | '40x27' | '44x27' | '38x25' | '50x30' | '40x20' | '44x26' | '55x40' | '40x26' | '40x30' | 'custom';
 
 const SIZE_DIMENSIONS: Record<LabelSize, { width: number; height: number; name: string }> = {
-    '48x24': { width: 48, height: 24, name: 'مخصص (48x24 مم)' },
-    '40x27': { width: 40, height: 27, name: 'مخصص (40x27 مم)' },
-    '44x27': { width: 44, height: 27, name: 'مخصص (44x27 مم)' },
-    '40x30': { width: 40, height: 30, name: 'افتراضي (40x30 مم)' },
-    '38x25': { width: 38, height: 25, name: 'صغير (38x25 مم)' },
-    '50x30': { width: 50, height: 30, name: 'وسط (50x30 مم)' },
-    '40x20': { width: 40, height: 20, name: 'ضيق (40x20 مم)' },
-    '44x26': { width: 44, height: 26, name: 'مخصص (44x26 مم)' },
-    '55x40': { width: 55, height: 40, name: 'كبير (55x40 مم)' },
-    '40x26': { width: 40, height: 26, name: 'وسط (40x26 مم)' },
-    'custom': { width: 0, height: 0, name: 'مخصص (أبعاد يدوية)' },
+    '48x24': { width: 48, height: 24, name: 'Custom (48x24 mm)' },
+    '40x27': { width: 40, height: 27, name: 'Custom (40x27 mm)' },
+    '44x27': { width: 44, height: 27, name: 'Custom (44x27 mm)' },
+    '40x30': { width: 40, height: 30, name: 'Default (40x30 mm)' },
+    '38x25': { width: 38, height: 25, name: 'Small (38x25 mm)' },
+    '50x30': { width: 50, height: 30, name: 'Medium (50x30 mm)' },
+    '40x20': { width: 40, height: 20, name: 'Narrow (40x20 mm)' },
+    '44x26': { width: 44, height: 26, name: 'Custom (44x26 mm)' },
+    '55x40': { width: 55, height: 40, name: 'Large (55x40 mm)' },
+    '40x26': { width: 40, height: 26, name: 'Medium (40x26 mm)' },
+    'custom': { width: 0, height: 0, name: 'Custom (manual dimensions)' },
 };
 
 const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
@@ -50,6 +51,9 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
     isOpen,
     onOpenChange,
 }) => {
+    const { t } = useTranslation();
+    const retailLabel = t('products.displayRetail');
+    const wholesaleLabel = t('products.displayWholesale');
     const [quantity, setQuantity] = useState(1);
     const [size, setSize] = useState<LabelSize>(() => (localStorage.getItem('joe-print-label-size') as LabelSize) || '40x30');
     const [customWidth, setCustomWidth] = useState(() => parseInt(localStorage.getItem('joe-print-label-customWidth') || '50'));
@@ -99,7 +103,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
         // Create new document content
         const doc = iframe.contentDocument || iframe.contentWindow?.document;
         if (!doc) {
-            showToast.error("خطأ في نظام الطباعة");
+            showToast.error(t('products.labelPrintError'));
             return;
         }
 
@@ -124,7 +128,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
             });
         } catch (e) {
             console.error(e);
-            showToast.error("خطأ في توليد الباركود");
+            showToast.error(t('products.labelPrintError'));
             return;
         }
         const svgString = tempSvg.outerHTML;
@@ -143,8 +147,8 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
             </div>
             
             <div class="prices-row centered">
-                ${showRetailPrice ? `<span class="price-val"> "ق" ${product.retailPrice.toFixed(2)}</span>` : ''}
-                ${showWholesalePrice ? `<span class="price-val"> "ج" ${product.wholesalePrice.toFixed(2)}</span>` : ''}
+                ${showRetailPrice ? `<span class="price-val">${retailLabel} ${product.retailPrice.toFixed(2)}</span>` : ''}
+                ${showWholesalePrice ? `<span class="price-val">${wholesaleLabel} ${product.wholesalePrice.toFixed(2)}</span>` : ''}
             </div>
         </div>
       </div>
@@ -154,7 +158,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
         doc.open();
         doc.write(`
     <!DOCTYPE html>
-    <html dir="rtl">
+    <html dir="ltr">
     <head>
         <title></title>
         <style>
@@ -263,7 +267,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
                         <DialogHeader className="p-0 text-right">
                             <DialogTitle className="text-xl font-black text-slate-900 flex items-center gap-2">
                                 <Printer className="w-5 h-5 text-indigo-600" />
-                                طباعة باركود
+                                {t('products.labelPrintTitle')}
                             </DialogTitle>
                             <DialogDescription>
                                 {product.name}
@@ -273,7 +277,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
                         <div className="space-y-4">
 
                             <div className="space-y-2">
-                                <Label className="font-bold text-slate-700">عدد الملصقات</Label>
+                                <Label className="font-bold text-slate-700">{t('products.labelQty')}</Label>
                                 <div className="flex items-center gap-2">
                                     <Input
                                         type="number"
@@ -287,7 +291,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="font-bold text-slate-700">مقاس الملصق</Label>
+                                <Label className="font-bold text-slate-700">{t('products.labelSize')}</Label>
                                 <Select value={size} onValueChange={(v: LabelSize) => setSize(v)}>
                                     <SelectTrigger className="h-12 rounded-xl bg-white"><SelectValue /></SelectTrigger>
                                     <SelectContent className="rounded-xl">
@@ -301,7 +305,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
                             {size === 'custom' && (
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label className="font-bold text-slate-700">العرض (مم)</Label>
+                                        <Label className="font-bold text-slate-700">{t('products.labelWidth')}</Label>
                                         <Input
                                             type="number"
                                             value={customWidth}
@@ -310,7 +314,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="font-bold text-slate-700">الارتفاع (مم)</Label>
+                                        <Label className="font-bold text-slate-700">{t('products.labelHeight')}</Label>
                                         <Input
                                             type="number"
                                             value={customHeight}
@@ -322,30 +326,30 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
                             )}
 
                             <div className="space-y-4 pt-4 border-t border-slate-200">
-                                <h4 className="font-black text-xs text-slate-400 uppercase tracking-widest">المحتوى</h4>
+                                <h4 className="font-black text-xs text-slate-400 uppercase tracking-widest">{t('products.labelContent')}</h4>
 
                                 <div className="flex items-center justify-between">
-                                    <Label className="font-bold text-slate-600">اسم المنتج</Label>
+                                    <Label className="font-bold text-slate-600">{t('products.labelShowName')}</Label>
                                     <Switch checked={showName} onCheckedChange={setShowName} />
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <Label className="font-bold text-slate-600">سعر القطاعي</Label>
+                                    <Label className="font-bold text-slate-600">{t('products.labelShowRetail')}</Label>
                                     <Switch checked={showRetailPrice} onCheckedChange={setShowRetailPrice} />
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <Label className="font-bold text-slate-600">سعر الجملة</Label>
+                                    <Label className="font-bold text-slate-600">{t('products.labelShowWholesale')}</Label>
                                     <Switch checked={showWholesalePrice} onCheckedChange={setShowWholesalePrice} />
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <Label className="font-bold text-slate-600">رقم الباركود</Label>
+                                    <Label className="font-bold text-slate-600">{t('products.labelShowBarcode')}</Label>
                                     <Switch checked={showBarcodeText} onCheckedChange={setShowBarcodeText} />
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <Label className="font-bold text-slate-600">تدوير 90 درجة</Label>
+                                    <Label className="font-bold text-slate-600">{t('products.labelRotate')}</Label>
                                     <Switch checked={rotate} onCheckedChange={setRotate} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-slate-600">حجم خط الاسم</Label>
+                                    <Label className="font-bold text-slate-600">{t('products.labelFontSize')}</Label>
                                     <Input
                                         type="number"
                                         min={6}
@@ -356,7 +360,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-slate-600">ارتفاع الباركود</Label>
+                                    <Label className="font-bold text-slate-600">{t('products.labelBarcodeHeight')}</Label>
                                     <Input
                                         type="number"
                                         min={10}
@@ -367,7 +371,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-slate-600">عرض الباركود (%)</Label>
+                                    <Label className="font-bold text-slate-600">{t('products.labelBarcodeWidth')}</Label>
                                     <Input
                                         type="number"
                                         min={1}
@@ -383,7 +387,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
                         <div className="mt-auto pt-6">
                             <Button onClick={handlePrint} className="w-full h-12 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold gap-2 text-lg">
                                 <Printer size={20} />
-                                طباعة ({quantity})
+                                {t('products.labelPrint', { count: quantity })}
                             </Button>
                         </div>
                     </div>
@@ -391,13 +395,13 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
                     {/* Preview Section */}
                     <div className="w-full md:w-1/2 p-8 bg-white flex flex-col items-center justify-center relative">
                         <div className="absolute top-4 right-4 text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">
-                            معاينة تقريبية
+                            {t('products.labelPreview')}
                         </div>
 
                         <div
                             className="border-2 border-slate-200 border-dashed rounded-lg flex flex-col items-center justify-center bg-white shadow-sm transition-all duration-300"
                             style={{
-                                width: `${(size === 'custom' ? customWidth : SIZE_DIMENSIONS[size].width) * 4}px`, // Zoomed x4
+                                width: `${(size === 'custom' ? customWidth : SIZE_DIMENSIONS[size].width) * 4}px`,
                                 height: `${(size === 'custom' ? customHeight : SIZE_DIMENSIONS[size].height) * 4}px`,
                                 padding: '0'
                             }}
@@ -434,12 +438,12 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
                                         </div>
 
                                         {/* Row 4: Prices */}
-                                        {(showRetailPrice || showWholesalePrice) && (
-                                            <div className="flex items-center gap-3 font-black text-slate-900 leading-none" style={{ fontSize: '10px' }}>
-                                                {showRetailPrice && <span> "ق" {product.retailPrice.toFixed(2)}</span>}
-                                                {showWholesalePrice && <span> "ج" {product.wholesalePrice.toFixed(2)}</span>}
-                                            </div>
-                                        )}
+                                            {(showRetailPrice || showWholesalePrice) && (
+                                                <div className="flex items-center gap-3 font-black text-slate-900 leading-none" style={{ fontSize: '10px' }}>
+                                                    {showRetailPrice && <span>{retailLabel} {product.retailPrice.toFixed(2)}</span>}
+                                                    {showWholesalePrice && <span>{wholesaleLabel} {product.wholesalePrice.toFixed(2)}</span>}
+                                                </div>
+                                            )}
                                     </div>
                                 ) : null}
                             </div>
@@ -447,10 +451,10 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({
 
                         <div className="mt-8 text-center space-y-2">
                             <p className="text-sm font-medium text-slate-500">
-                                الحجم النهائي: <span className="text-slate-900 font-bold" dir="ltr">{SIZE_DIMENSIONS[size].width}mm x {SIZE_DIMENSIONS[size].height}mm</span>
+                                {t('products.labelFinalSize', { width: SIZE_DIMENSIONS[size].width, height: SIZE_DIMENSIONS[size].height })}
                             </p>
                             <p className="text-xs text-slate-400">
-                                تأكد من اختيار حجم الورق المطابق في إعدادات الطابعة
+                                {t('products.labelPaperConfirm')}
                             </p>
                         </div>
                     </div>

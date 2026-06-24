@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ProductService } from '../services/ProductService';
 import { CategoryService } from '../services/CategoryService';
 import { SettingsService } from '../services/SettingsService';
@@ -132,6 +133,7 @@ const ProductManagement: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const settingsService = useMemo(() => new SettingsService(), []);
   const stockAlerts = useStockAlerts();
+  const { t } = useTranslation();
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -174,7 +176,7 @@ const ProductManagement: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 1024 * 1024) { // 1MB limit for Base64 storage
-        showToast.error('حجم الصورة كبير جداً (الأقصى 1MB)');
+        showToast.error(t('products.toastImageSize'));
         return;
       }
 
@@ -234,32 +236,32 @@ const ProductManagement: React.FC = () => {
   const handleSubmit = async () => {
     // 1. Basic Required Fields (Name, Barcode, Category)
     if ((!formData.name && !skips.name) || (!formData.barcode && !skips.barcode) || !formData.categoryId) {
-      showToast.error('يرجى ملء البيانات المطلوبة أو اختيار تجاوز (الاسم، الباركود، التصنيف)');
+      showToast.error(t('products.toastRequired'));
       return;
     }
 
     // 1b. Barcode Length Validation (5-9 digits)
     if (!skips.barcode && (formData.barcode.length < 5 || formData.barcode.length > 9)) {
-      showToast.error('يجب أن يتكون الباركود من 5 إلى 9 أرقام');
+      showToast.error(t('products.barcodeValidation'));
       return;
     }
 
     // 2. Enforce Non-Zero Stock unless bypassed
     if (formData.stockQuantity === 0 && !skips.stock) {
-      showToast.error('يرجى إدخال الكمية أو اختيار تجاوز');
+      showToast.error(t('products.toastStockZero'));
       return;
     }
 
     // 3. Enforce Non-Zero Prices unless bypassed
     const hasZeroPrice = formData.purchasePrice === 0 || formData.wholesalePrice === 0 || formData.retailPrice === 0;
     if (hasZeroPrice && !skips.prices) {
-      showToast.error('يرجى إدخال أسعار الشراء والبيع أو اختيار تجاوز');
+      showToast.error(t('products.toastPriceZero'));
       return;
     }
 
     const finalData = { ...formData };
     if (skips.name && !finalData.name) {
-      finalData.name = 'منتج جديد ' + new Date().toLocaleTimeString('ar-EG');
+      finalData.name = t('products.addNewProduct') + ' ' + new Date().toLocaleTimeString();
     }
     if (skips.barcode && !finalData.barcode) {
       finalData.barcode = 'AUTO-' + Date.now().toString().slice(-8);
@@ -273,7 +275,7 @@ const ProductManagement: React.FC = () => {
     }
 
     if (response.success) {
-      showToast.success(editingProduct ? 'تم تحديث المنتج بنجاح' : 'تم إضافة المنتج بنجاح');
+      showToast.success(editingProduct ? t('products.toastUpdated') : t('products.toastAdded'));
       setIsModalOpen(false);
       loadData();
       stockAlerts.refresh();
@@ -286,7 +288,7 @@ const ProductManagement: React.FC = () => {
     if (!deletingProduct) return;
     const response = await productService.deleteProduct(deletingProduct.id);
     if (response.success) {
-      showToast.success('تم حذف المنتج بنجاح');
+      showToast.success(t('products.toastDeleted'));
       setIsDeleteModalOpen(false);
       loadData();
       stockAlerts.refresh();
@@ -297,26 +299,26 @@ const ProductManagement: React.FC = () => {
 
   const getCategoryName = (categoryId: string) => {
     const category = categories.find((c) => c.id === categoryId);
-    return category?.name || 'غير محدد';
+    return category?.name || t('products.category');
   };
 
   const handleExport = async () => {
     if (filteredProducts.length === 0) {
-      showToast.error('لا توجد بيانات لتصديرها');
+      showToast.error(t('products.noDataToExport'));
       return;
     }
 
     const formattedData = ExportService.formatProductsForExport(filteredProducts);
     const result = await ExportService.exportToExcel(
       formattedData,
-      `مخزون_جو_كاشير_${new Date().toISOString().split('T')[0]}`,
-      'المنتجات'
+      `Products_JOECASHIER_${new Date().toISOString().split('T')[0]}`,
+      t('products.inventoryAndProducts')
     );
 
     if (result.success) {
-      showToast.success('تم تصدير ملف الإكسيل بنجاح');
+      showToast.success(t('products.exportSuccess'));
     } else {
-      showToast.error('فشل تصدير الملف');
+      showToast.error(t('products.exportError'));
     }
   };
 
@@ -334,10 +336,10 @@ const ProductManagement: React.FC = () => {
         <div className="md:col-span-7 flex flex-col justify-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold w-fit mb-4">
             <Package size={14} />
-            <span>المخزون والمنتجات</span>
+            <span>{t('products.inventoryAndProducts')}</span>
           </div>
-          <h1 className="text-4xl font-black text-foreground mb-2">إدارة المنتجات</h1>
-          <p className="text-muted-foreground font-medium">إضافة وتعديل المنتجات، تتبع المخزون، وتنظيم التصنيفات</p>
+          <h1 className="text-4xl font-black text-foreground mb-2">{t('products.pageTitle')}</h1>
+          <p className="text-muted-foreground font-medium">{t('products.pageDesc')}</p>
         </div>
 
         <div className="md:col-span-5 flex items-center justify-end gap-4">
@@ -346,7 +348,7 @@ const ProductManagement: React.FC = () => {
             className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-lg font-black gap-2 transition-none border-none shadow-lg shadow-primary/20"
           >
             <Plus size={24} />
-            إضافة منتج جديد
+            {t('products.addNewProduct')}
           </Button>
         </div>
       </div>
@@ -357,7 +359,7 @@ const ProductManagement: React.FC = () => {
         <div className="relative flex-1 w-full">
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
           <Input
-            placeholder="البحث بالاسم أو الباركود..."
+            placeholder={t('products.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pr-12 h-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all text-sm font-medium text-foreground"
@@ -369,10 +371,10 @@ const ProductManagement: React.FC = () => {
             <Filter className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="h-12 pr-10 rounded-2xl border-border bg-surface-muted font-bold text-foreground">
-                <SelectValue placeholder="كل التصنيفات" />
+                <SelectValue placeholder={t('products.allCategories')} />
               </SelectTrigger>
               <SelectContent className="rounded-2xl">
-                <SelectItem value="all">كل التصنيفات</SelectItem>
+                <SelectItem value="all">{t('products.allCategories')}</SelectItem>
                 {categories.map((c) => (
                   <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
@@ -387,7 +389,7 @@ const ProductManagement: React.FC = () => {
           className="h-12 px-6 rounded-2xl border-border bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 font-bold gap-2 transition-all shrink-0"
         >
           <FileSpreadsheet size={18} />
-          تصدير إكسيل
+          {t('products.exportExcel')}
         </Button>
       </div>
 
@@ -397,12 +399,12 @@ const ProductManagement: React.FC = () => {
           <Table>
             <TableHeader className="bg-surface-muted/50">
               <TableRow className="hover:bg-transparent border-border">
-                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6 pr-8">المنتج</TableHead>
-                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6">الباركود</TableHead>
-                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6">التصنيف</TableHead>
-                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6">الأسعار (جمله/قطاعي)</TableHead>
-                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6">المخزون</TableHead>
-                <TableHead className="text-left font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6 pl-8">الإجراءات</TableHead>
+                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6 pr-8">{t('products.productName')}</TableHead>
+                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6">{t('products.barcode')}</TableHead>
+                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6">{t('products.category')}</TableHead>
+                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6">{t('products.qtyAndPrices')}</TableHead>
+                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6">{t('products.stock')}</TableHead>
+                <TableHead className="text-left font-black uppercase tracking-wider text-[10px] text-muted-foreground py-6 pl-8">{t('products.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -417,7 +419,7 @@ const ProductManagement: React.FC = () => {
                   <TableCell colSpan={6} className="h-64 text-center">
                     <div className="flex flex-col items-center justify-center gap-4 text-slate-300">
                       <Package size={48} strokeWidth={1} className="text-muted-foreground/30" />
-                      <p className="font-bold text-foreground/40">لا يوجد منتجات مطابقة للبحث</p>
+                      <p className="font-bold text-foreground/40">{t('products.noProducts')}</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -449,9 +451,9 @@ const ProductManagement: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="text-xs font-bold text-foreground">{product.retailPrice.toFixed(2)} <span className="text-[8px] text-muted-foreground">{settings?.pricingOpts?.tier1Name || 'قطاعي'}</span></div>
+                          <div className="text-xs font-bold text-foreground">{product.retailPrice.toFixed(2)} <span className="text-[8px] text-muted-foreground">{settings?.pricingOpts?.tier1Name || t('products.retailPrice')}</span></div>
                           {settings?.pricingOpts?.showTier2 !== false && (
-                            <div className="text-[10px] font-medium text-slate-400">{product.wholesalePrice.toFixed(2)} <span className="text-[8px]">{settings?.pricingOpts?.tier2Name || 'جملة'}</span></div>
+                            <div className="text-[10px] font-medium text-slate-400">{product.wholesalePrice.toFixed(2)} <span className="text-[8px]">{settings?.pricingOpts?.tier2Name || t('products.wholesalePrice')}</span></div>
                           )}
                           {(settings?.pricingOpts?.customTiers || []).map(t => (
                             <div key={t.id} className="text-[10px] font-medium text-indigo-400">{Number(product.metadata?.customPrices?.[t.id] || 0).toFixed(2)} <span className="text-[8px]">{t.name}</span></div>
@@ -481,7 +483,7 @@ const ProductManagement: React.FC = () => {
                               setPrintingProduct(product);
                               setIsPrintModalOpen(true);
                             }}
-                            title="طباعة باركود"
+                            title={t('products.printBarcode')}
                           >
                             <Printer size={16} className="text-muted-foreground" />
                           </Button>
@@ -518,7 +520,7 @@ const ProductManagement: React.FC = () => {
         {totalPages > 1 && (
           <div className="p-6 border-t border-border flex items-center justify-between bg-surface-bg">
             <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-              عرض <span className="text-foreground">{paginatedProducts.length}</span> من <span className="text-foreground">{filteredProducts.length}</span> منتج
+              {t('products.showing', { count: paginatedProducts.length, total: filteredProducts.length })}
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -528,7 +530,7 @@ const ProductManagement: React.FC = () => {
                 disabled={currentPage === 1}
                 className="h-10 px-4 rounded-xl border-border text-foreground"
               >
-                السابق
+                {t('products.previous')}
                 <ChevronRight size={18} className="ml-1" />
               </Button>
               <Button
@@ -538,7 +540,7 @@ const ProductManagement: React.FC = () => {
                 disabled={currentPage === totalPages}
                 className="h-10 px-4 rounded-xl border-border text-foreground"
               >
-                التالي
+                {t('products.next')}
                 <ChevronLeft size={18} className="mr-1" />
               </Button>
             </div>
@@ -555,19 +557,19 @@ const ProductManagement: React.FC = () => {
                 <div className="p-2 bg-white/20 rounded-xl">
                   {editingProduct ? <Edit size={24} /> : <Plus size={24} />}
                 </div>
-                <DialogTitle className="text-3xl font-black">{editingProduct ? 'تعديل المنتج' : 'إضافة منتج جديد'}</DialogTitle>
+                <DialogTitle className="text-3xl font-black">{editingProduct ? t('products.editTitle') : t('products.addTitle')}</DialogTitle>
               </div>
-              <DialogDescription className="text-indigo-100 opacity-80">أدخل تفاصيل المنتج بدقة لضمان دقة التقارير والمخزون</DialogDescription>
+              <DialogDescription className="text-indigo-100 opacity-80">{t('products.addDesc')}</DialogDescription>
             </DialogHeader>
 
             <div className="p-8 space-y-6 overflow-y-auto flex-1">
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between pr-1">
-                    <Label className="font-bold text-foreground/80">اسم المنتج</Label>
+                    <Label className="font-bold text-foreground/80">{t('products.productNameLabel')}</Label>
                     <div className="flex items-center gap-1.5 cursor-pointer group" onClick={() => setSkips({ ...skips, name: !skips.name })}>
                       <Checkbox checked={skips.name} onCheckedChange={(checked) => setSkips({ ...skips, name: !!checked })} id="skip-name" className="w-3.5 h-3.5" />
-                      <Label htmlFor="skip-name" className="text-[10px] font-bold text-muted-foreground cursor-pointer group-hover:text-primary transition-colors">تجاوز</Label>
+                      <Label htmlFor="skip-name" className="text-[10px] font-bold text-muted-foreground cursor-pointer group-hover:text-primary transition-colors">{t('products.skip')}</Label>
                     </div>
                   </div>
                   <Input
@@ -575,15 +577,15 @@ const ProductManagement: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     disabled={skips.name}
                     className={cn("h-12 rounded-xl bg-surface-muted border-border text-foreground transition-opacity", skips.name && "opacity-50")}
-                    placeholder={skips.name ? "تجاوز التسمية..." : "مثال: تيشرت قطن"}
+                    placeholder={skips.name ? t('products.autoGenerate') : t('products.productNamePlaceholder')}
                   />
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between pr-1">
-                    <Label className="font-bold text-foreground/80">الباركود</Label>
+                    <Label className="font-bold text-foreground/80">{t('products.barcode')}</Label>
                     <div className="flex items-center gap-1.5 cursor-pointer group" onClick={() => setSkips({ ...skips, barcode: !skips.barcode })}>
                       <Checkbox checked={skips.barcode} onCheckedChange={(checked) => setSkips({ ...skips, barcode: !!checked })} id="skip-barcode" className="w-3.5 h-3.5" />
-                      <Label htmlFor="skip-barcode" className="text-[10px] font-bold text-muted-foreground cursor-pointer group-hover:text-primary transition-colors">تجاوز</Label>
+                      <Label htmlFor="skip-barcode" className="text-[10px] font-bold text-muted-foreground cursor-pointer group-hover:text-primary transition-colors">{t('products.skip')}</Label>
                     </div>
                   </div>
                   <Input
@@ -595,17 +597,17 @@ const ProductManagement: React.FC = () => {
                     maxLength={9}
                     disabled={skips.barcode}
                     className={cn("h-12 rounded-xl bg-surface-muted border-border text-foreground transition-opacity", skips.barcode && "opacity-50")}
-                    placeholder={skips.barcode ? "توليد تلقائي..." : "000000000"}
+                    placeholder={skips.barcode ? t('products.autoGenerate') : t('products.barcodePlaceholder')}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="font-bold text-foreground/80 pr-1">التصنيف</Label>
+                  <Label className="font-bold text-foreground/80 pr-1">{t('products.categoryLabel')}</Label>
                   <Select
                     value={formData.categoryId}
                     onValueChange={(val) => setFormData({ ...formData, categoryId: val })}
                   >
                     <SelectTrigger className="h-12 rounded-xl bg-surface-muted border-border text-foreground">
-                      <SelectValue placeholder="اختر التصنيف" />
+                      <SelectValue placeholder={t('products.categoryPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl bg-surface-bg border-border">
                       {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
@@ -613,7 +615,7 @@ const ProductManagement: React.FC = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="font-bold text-foreground/80 pr-1">الحد الأدنى للتنبيه</Label>
+                  <Label className="font-bold text-foreground/80 pr-1">{t('products.minStockLabel')}</Label>
                   <Input
                     type="number"
                     value={formData.minStockLevel}
@@ -626,7 +628,7 @@ const ProductManagement: React.FC = () => {
               <div className="bg-surface-muted/50 p-6 rounded-2xl border border-border shadow-sm space-y-6">
                 <h4 className="text-sm font-black text-foreground uppercase tracking-widest flex items-center gap-2">
                   <BarChart3 size={16} className="text-secondary" />
-                  الكمية والأسعار
+                  {t('products.qtyAndPrices')}
                   <div className="mr-auto flex items-center gap-1.5 cursor-pointer group" onClick={() => setSkips({ ...skips, prices: !skips.prices, stock: !skips.stock })}>
                     <Checkbox
                       checked={skips.prices && skips.stock}
@@ -634,12 +636,12 @@ const ProductManagement: React.FC = () => {
                       id="skip-all-values"
                       className="w-3.5 h-3.5"
                     />
-                    <Label htmlFor="skip-all-values" className="text-[10px] font-bold text-muted-foreground cursor-pointer group-hover:text-primary transition-colors">تجاوز الكل</Label>
+                    <Label htmlFor="skip-all-values" className="text-[10px] font-bold text-muted-foreground cursor-pointer group-hover:text-primary transition-colors">{t('products.skip')}</Label>
                   </div>
                 </h4>
                 <div className="grid grid-cols-4 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-muted-foreground pr-1">سعر الشراء</Label>
+                    <Label className="text-xs font-bold text-muted-foreground pr-1">{t('products.purchasePrice')}</Label>
                     <Input
                       type="number"
                       value={formData.purchasePrice}
@@ -649,7 +651,7 @@ const ProductManagement: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-muted-foreground pr-1">الكمية الحالية</Label>
+                    <Label className="text-xs font-bold text-muted-foreground pr-1">{t('products.currentStock')}</Label>
                     <Input
                       type="number"
                       value={formData.stockQuantity}
@@ -659,7 +661,7 @@ const ProductManagement: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-muted-foreground pr-1">سعر {settings?.pricingOpts?.tier2Name || 'جملة'}</Label>
+                    <Label className="text-xs font-bold text-muted-foreground pr-1">{t('products.wholesalePrice')}</Label>
                     <Input
                       type="number"
                       value={formData.wholesalePrice}
@@ -669,7 +671,7 @@ const ProductManagement: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-muted-foreground pr-1">سعر {settings?.pricingOpts?.tier1Name || 'قطاعي'}</Label>
+                    <Label className="text-xs font-bold text-muted-foreground pr-1">{t('products.retailPrice')}</Label>
                     <Input
                       type="number"
                       value={formData.retailPrice}
@@ -678,15 +680,14 @@ const ProductManagement: React.FC = () => {
                       className={cn("font-black text-center h-12 rounded-xl border-border bg-secondary/10 text-foreground transition-opacity", skips.prices && "opacity-50")}
                     />
                   </div>
-                  {(settings?.pricingOpts?.customTiers || []).map(t => (
-                    <div key={t.id} className="space-y-2">
-                      <Label className="text-xs font-bold text-muted-foreground pr-1">سعر {t.name}</Label>
+{(settings?.pricingOpts?.customTiers || []).map(tier => (
+                    <div key={tier.id} className="space-y-2">
+                      <Label className="text-xs font-bold text-muted-foreground pr-1">{t('products.customTierPrice', { name: tier.name })}</Label>
                       <Input
                         type="number"
-                        value={formData.metadata?.customPrices?.[t.id] || ''}
-                        onChange={(e) => setFormData(f => ({ ...f, metadata: { ...f.metadata, customPrices: { ...(f.metadata?.customPrices || {}), [t.id]: parseFloat(e.target.value) || 0 } } }))}
-                        disabled={skips.prices}
-                        className={cn("font-black text-center h-12 rounded-xl border-border bg-surface-bg text-foreground transition-opacity", skips.prices && "opacity-50")}
+                        value={formData.metadata?.customPrices?.[tier.id] || ''}
+                        onChange={(e) => setFormData(f => ({ ...f, metadata: { ...f.metadata, customPrices: { ...(f.metadata?.customPrices || {}), [tier.id]: parseFloat(e.target.value) || 0 } } }))}
+                        className={cn("font-black text-center h-12 rounded-xl border-border bg-secondary/10 text-foreground transition-opacity", skips.prices && "opacity-50")}
                       />
                     </div>
                   ))}
@@ -696,10 +697,10 @@ const ProductManagement: React.FC = () => {
               <div className="space-y-4">
                 <h4 className="text-sm font-black text-foreground uppercase tracking-widest flex items-center gap-2">
                   <ImageIcon size={16} className="text-secondary" />
-                  معلومات إضافية
+                  {t('products.additionalInfo')}
                 </h4>
                 <div className="space-y-4">
-                  <Label className="text-xs font-bold text-muted-foreground pr-1">صورة المنتج</Label>
+                  <Label className="text-xs font-bold text-muted-foreground pr-1">{t('products.productImage')}</Label>
                   <div className="flex items-center gap-6">
                     <div className="h-32 w-32 rounded-3xl bg-surface-muted border-2 border-dashed border-border flex items-center justify-center text-muted-foreground overflow-hidden relative group">
                       {formData.metadata?.imageUrl ? (
@@ -731,19 +732,19 @@ const ProductManagement: React.FC = () => {
                         className="h-10 rounded-xl border-border px-4 font-bold flex items-center gap-2"
                       >
                         <Upload size={16} />
-                        اختر صورة
+                        {t('products.chooseImage')}
                       </Button>
-                      <p className="text-[10px] text-muted-foreground max-w-[150px]">يفضل استخدام صور مربعة (PNG/JPG) بحد أقصى 1MB</p>
+                      <p className="text-[10px] text-muted-foreground max-w-[150px]">{t('products.imageHint')}</p>
                     </div>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold text-muted-foreground pr-1">الوصف</Label>
+                  <Label className="text-xs font-bold text-muted-foreground pr-1">{t('products.description')}</Label>
                   <textarea
                     value={formData.metadata?.description || ''}
                     onChange={(e) => setFormData({ ...formData, metadata: { ...formData.metadata, description: e.target.value } })}
                     className="w-full min-h-[100px] p-4 rounded-xl border border-border bg-surface-muted focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-medium text-foreground"
-                    placeholder="اكتب وصفاً مختصراً للمنتج..."
+                    placeholder={t('products.descriptionPlaceholder')}
                   />
                 </div>
               </div>
@@ -751,9 +752,9 @@ const ProductManagement: React.FC = () => {
 
             <DialogFooter className="p-8 pt-0 flex gap-4 bg-transparent border-none">
               <Button onClick={handleSubmit} className="flex-1 h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black text-lg shadow-lg shadow-primary/20 border-none">
-                {editingProduct ? 'حفظ التعديلات' : 'إضافة المنتج'}
+                {editingProduct ? t('products.saveChanges') : t('products.addProduct')}
               </Button>
-              <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 h-14 rounded-2xl border-border font-bold text-foreground">إلغاء</Button>
+              <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 h-14 rounded-2xl border-border font-bold text-foreground">{t('common.cancel')}</Button>
             </DialogFooter>
           </div>
         </DialogContent>
@@ -766,14 +767,12 @@ const ProductManagement: React.FC = () => {
             <AlertTriangle size={40} />
           </div>
           <div>
-            <h3 className="text-2xl font-black text-foreground mb-2">تأكيد الحذف</h3>
-            <p className="text-muted-foreground font-medium">
-              هل أنت متأكد من حذف المنتج <span className="text-rose-500 font-black">"{deletingProduct?.name}"</span>؟ لا يمكن التراجع عن هذا الإجراء.
-            </p>
+            <h3 className="text-2xl font-black text-foreground mb-2">{t('products.deleteTitle')}</h3>
+            <p className="text-muted-foreground font-medium">{t('products.deleteConfirm', { name: deletingProduct?.name })}</p>
           </div>
           <div className="flex gap-3">
-            <Button variant="destructive" onClick={handleDelete} className="flex-1 h-12 rounded-xl font-black bg-rose-600 hover:bg-rose-700">حذف نهائياً</Button>
-            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)} className="flex-1 h-12 rounded-xl font-bold border-border text-foreground">تراجع</Button>
+            <Button variant="destructive" onClick={handleDelete} className="flex-1 h-12 rounded-xl font-black bg-rose-600 hover:bg-rose-700">{t('products.deletePermanent')}</Button>
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)} className="flex-1 h-12 rounded-xl font-bold border-border text-foreground">{t('common.cancel')}</Button>
           </div>
         </DialogContent>
       </Dialog>

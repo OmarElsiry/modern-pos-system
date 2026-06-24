@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
     Settings,
     Archive,
@@ -26,7 +26,7 @@ import {
     Trash2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { languages } from '../i18n';
+import i18n, { languages as appLanguages } from '../i18n';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,13 +39,18 @@ import { SystemSettings, BusinessInfo } from '../types/models';
 import { useTheme } from '../hooks/useTheme';
 import { cn } from '@/lib/utils';
 
+const getI18nLocale = (lang: string): string => {
+    const map: Record<string, string> = { ar: 'ar-EG', fa: 'fa-IR', de: 'de-DE', fr: 'fr-FR', ru: 'ru-RU', zh: 'zh-CN', en: 'en-US' };
+    return map[lang] || lang;
+};
+
 const SettingsScreen: React.FC = () => {
     const [settings, setSettings] = useState<SystemSettings | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [archiving, setArchiving] = useState(false);
     const { isDark, toggleTheme } = useTheme();
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
 
     const settingsService = new SettingsService();
     const archiveService = new ArchiveService();
@@ -61,7 +66,7 @@ const SettingsScreen: React.FC = () => {
                 setSettings(response.data);
             }
         } catch (error) {
-            showToast.error('فشل تحميل الإعدادات');
+            showToast.error(t('settings.toast.loadFailed'));
         } finally {
             setLoading(false);
         }
@@ -73,12 +78,12 @@ const SettingsScreen: React.FC = () => {
         try {
             const response = await settingsService.updateSettings(settings);
             if (response.success) {
-                showToast.success('تم حفظ الإعدادات بنجاح');
+                showToast.success(t('settings.toast.saved'));
             } else {
-                showToast.error('فشل حفظ الإعدادات');
+                showToast.error(t('settings.toast.saveFailed'));
             }
         } catch (error) {
-            showToast.error('خطأ في الاتصال');
+            showToast.error(t('settings.toast.connectionError'));
         } finally {
             setSaving(false);
         }
@@ -87,15 +92,15 @@ const SettingsScreen: React.FC = () => {
     const handleArchiveNow = async () => {
         setArchiving(true);
         try {
-            showToast.info('جاري إنشاء الأرشيف اليومي...');
+            showToast.info(t('settings.toast.archivingDaily'));
             const result = await archiveService.archiveDailyReport();
             if (result.success) {
-                showToast.success(`تم بنجاح! تم الحفظ في: ${result.path}`);
+                showToast.success(t('settings.toast.archiveSuccess', { path: result.path }));
             } else {
-                showToast.error(`فشل الأرشفة: ${result.error}`);
+                showToast.error(t('settings.toast.archiveFailed', { error: result.error }));
             }
         } catch (error) {
-            showToast.error('حدث خطأ أثناء الأرشفة');
+            showToast.error(t('settings.toast.archiveError'));
         } finally {
             setArchiving(false);
         }
@@ -128,7 +133,7 @@ const SettingsScreen: React.FC = () => {
                         <div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin"></div>
                         <Settings className="absolute inset-0 m-auto text-primary animate-pulse" size={24} />
                     </div>
-                    <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">جاري تهيئة الإعدادات...</p>
+                    <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">{t('settings.loading')}</p>
                 </div>
             </div>
         );
@@ -141,10 +146,10 @@ const SettingsScreen: React.FC = () => {
                 <div className="space-y-2">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest w-fit">
                         <Palette size={12} />
-                        <span>تخصيص وإدارة</span>
+                        <span>{t('settings.badge')}</span>
                     </div>
-                    <h1 className="text-4xl font-black text-foreground">الإعدادات العامة</h1>
-                    <p className="text-muted-foreground font-medium">إدارة هوية المتجر، الأتمتة، والسمات البصرية</p>
+                    <h1 className="text-4xl font-black text-foreground">{t('settings.heading')}</h1>
+                    <p className="text-muted-foreground font-medium">{t('settings.desc')}</p>
                 </div>
                 <div className="flex gap-4">
                     <Button
@@ -153,7 +158,7 @@ const SettingsScreen: React.FC = () => {
                         className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black text-lg shadow-xl shadow-primary/20 gap-3 transition-all hover:scale-105 active:scale-95 border-none"
                     >
                         {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save size={24} />}
-                        {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+                        {saving ? t('settings.saving') : t('settings.save')}
                     </Button>
                 </div>
             </div>
@@ -171,93 +176,93 @@ const SettingsScreen: React.FC = () => {
                                     <Store size={28} strokeWidth={2.5} />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl font-black text-foreground">هوية المتجر</CardTitle>
-                                    <CardDescription className="font-medium text-muted-foreground">البيانات الأساسية التي ستظهر على الإيصالات والتقارير</CardDescription>
+                                    <CardTitle className="text-2xl font-black text-foreground">{t('settings.businessInfo')}</CardTitle>
+                                    <CardDescription className="font-medium text-muted-foreground">{t('settings.businessInfoDesc')}</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
                             <div className="space-y-3">
-                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">اسم المتجر الرسمي</Label>
+                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">{t('settings.storeName')}</Label>
                                 <div className="relative group">
                                     <Store className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
                                         value={settings?.businessInfo?.name || ''}
                                         onChange={(e) => updateBusinessInfo('name', e.target.value)}
-                                        placeholder="أدخل اسم المتجر"
+                                        placeholder={t('settings.storeNamePlaceholder')}
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">العنوان بالتفصيل</Label>
+                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">{t('settings.storeAddress')}</Label>
                                 <div className="relative group">
                                     <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
                                         value={settings?.businessInfo?.address || ''}
                                         onChange={(e) => updateBusinessInfo('address', e.target.value)}
-                                        placeholder="المدينة، الحي، الشارع"
+                                        placeholder={t('settings.storeAddressPlaceholder')}
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">رقم التواصل</Label>
+                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">{t('settings.phone')}</Label>
                                 <div className="relative group">
                                     <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
                                         value={settings?.businessInfo?.phone || ''}
                                         onChange={(e) => updateBusinessInfo('phone', e.target.value)}
-                                        placeholder="01xxxxxxxxx"
+                                        placeholder={t('settings.phonePlaceholder')}
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">الرقم الضريبي (اختياري)</Label>
+                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">{t('settings.taxId')}</Label>
                                 <div className="relative group">
                                     <ShieldCheck className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
                                         value={settings?.businessInfo?.taxId || ''}
                                         onChange={(e) => updateBusinessInfo('taxId', e.target.value)}
-                                        placeholder="123-456-789"
+                                        placeholder={t('settings.taxIdPlaceholder')}
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">البريد الإلكتروني</Label>
+                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">{t('settings.email')}</Label>
                                 <div className="relative group">
                                     <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
                                         value={settings?.businessInfo?.email || ''}
                                         onChange={(e) => updateBusinessInfo('email', e.target.value)}
-                                        placeholder="info@yourstore.com"
+                                        placeholder={t('settings.emailPlaceholder')}
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground text-left"
                                         dir="ltr"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">سياسة الاسترجاع والاستبدال</Label>
+                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">{t('settings.returnPolicy')}</Label>
                                 <div className="relative group">
                                     <ShieldCheck className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
                                         value={settings?.businessInfo?.returnPolicy || ''}
                                         onChange={(e) => updateBusinessInfo('returnPolicy' as any, e.target.value)}
-                                        placeholder="لا يوجد استرجاع - يوجد استبدال..."
+                                        placeholder={t('settings.returnPolicyPlaceholder')}
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">رسالة التذيل (شكراً لزيارتكم)</Label>
+                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">{t('settings.thankYouNote')}</Label>
                                 <div className="relative group">
                                     <Store className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                                     <Input
                                         value={settings?.businessInfo?.thankYouNote || ''}
                                         onChange={(e) => updateBusinessInfo('thankYouNote' as any, e.target.value)}
-                                        placeholder="شكراً لزيارتكم!"
+                                        placeholder={t('settings.thankYouNotePlaceholder')}
                                         className="h-14 pr-12 rounded-2xl border-border bg-surface-muted focus:bg-surface-bg transition-all font-bold text-foreground"
                                     />
                                 </div>
@@ -273,8 +278,8 @@ const SettingsScreen: React.FC = () => {
                                     <FileText size={28} strokeWidth={2.5} />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl font-black text-foreground">إعدادات الطباعة</CardTitle>
-                                    <CardDescription className="font-medium text-muted-foreground">تخصيص مظهر ومحتوى الإيصالات المطبوعة</CardDescription>
+                                    <CardTitle className="text-2xl font-black text-foreground">{t('settings.printSettings')}</CardTitle>
+                                    <CardDescription className="font-medium text-muted-foreground">{t('settings.printSettingsDesc')}</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
@@ -284,9 +289,9 @@ const SettingsScreen: React.FC = () => {
                                 {/* Primary Logo */}
                                 <div className="space-y-6">
                                     <div className="flex items-center justify-between">
-                                        <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">الشعار الأساسي</Label>
+                                        <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">{t('settings.primaryLogo')}</Label>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-bold text-muted-foreground">إظهار</span>
+                                            <span className="text-[10px] font-bold text-muted-foreground">{t('settings.show')}</span>
                                             <Switch
                                                 checked={true}
                                                 disabled
@@ -304,13 +309,13 @@ const SettingsScreen: React.FC = () => {
                                                             onClick={() => updateBusinessInfo('logo', '')}
                                                             className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white text-[10px] font-black uppercase tracking-tighter"
                                                         >
-                                                            إزالة الشعار
+                                                            {t('settings.removeLogo')}
                                                         </button>
                                                     </>
                                                 ) : (
                                                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                                                         <ImageIcon size={24} />
-                                                        <span className="text-[10px] font-black uppercase tracking-widest">لا يوجد</span>
+                                                        <span className="text-[10px] font-black uppercase tracking-widest">{t('settings.noLogo')}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -337,13 +342,13 @@ const SettingsScreen: React.FC = () => {
                                             >
                                                 <label htmlFor="logo1-upload" className="cursor-pointer">
                                                     <ImageIcon size={16} />
-                                                    رفع شعار
+                                                    {t('settings.uploadLogo')}
                                                 </label>
                                             </Button>
                                         </div>
 
                                         <div className="space-y-4">
-                                            <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block text-center">موضع الشعار 1</Label>
+                                            <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block text-center">{t('settings.logoPosition1')}</Label>
                                             <div className="grid grid-cols-3 gap-2">
                                                 {[
                                                     { id: 'top-left', icon: <AlignLeft size={14} /> },
@@ -375,9 +380,9 @@ const SettingsScreen: React.FC = () => {
                                 {/* Secondary Logo */}
                                 <div className="space-y-6">
                                     <div className="flex items-center justify-between">
-                                        <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">الشعار الثانوي (إضافي)</Label>
+                                        <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">{t('settings.secondaryLogo')}</Label>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-bold text-muted-foreground">إظهار</span>
+                                            <span className="text-[10px] font-bold text-muted-foreground">{t('settings.show')}</span>
                                             <Switch
                                                 checked={settings?.businessInfo?.showLogo2 ?? false}
                                                 onCheckedChange={(val) => updateBusinessInfo('showLogo2' as any, val as any)}
@@ -395,13 +400,13 @@ const SettingsScreen: React.FC = () => {
                                                             onClick={() => updateBusinessInfo('logo2' as any, '')}
                                                             className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white text-[10px] font-black uppercase tracking-tighter"
                                                         >
-                                                            إزالة الشعار
+                                                            {t('settings.removeLogo')}
                                                         </button>
                                                     </>
                                                 ) : (
                                                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                                                         <ImageIcon size={24} />
-                                                        <span className="text-[10px] font-black uppercase tracking-widest">لا يوجد</span>
+                                                        <span className="text-[10px] font-black uppercase tracking-widest">{t('settings.noLogo')}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -428,13 +433,13 @@ const SettingsScreen: React.FC = () => {
                                             >
                                                 <label htmlFor="logo2-upload" className="cursor-pointer">
                                                     <ImageIcon size={16} />
-                                                    رفع شعار
+                                                    {t('settings.uploadLogo')}
                                                 </label>
                                             </Button>
                                         </div>
 
                                         <div className="space-y-4">
-                                            <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block text-center">موضع الشعار 2</Label>
+                                            <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block text-center">{t('settings.logoPosition2')}</Label>
                                             <div className="grid grid-cols-3 gap-2">
                                                 {[
                                                     { id: 'top-left', icon: <AlignLeft size={14} /> },
@@ -466,12 +471,12 @@ const SettingsScreen: React.FC = () => {
 
                             {/* Visibility Toggles */}
                             <div className="space-y-4 pt-4 border-t border-border">
-                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">إظهار البيانات في الفاتورة</Label>
+                                <Label className="text-xs font-black text-foreground/70 uppercase tracking-widest mr-1">{t('settings.showInvoiceData')}</Label>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {[
-                                        { id: 'showName', label: 'اسم المتجر', icon: <Store size={18} /> },
-                                        { id: 'showAddress', label: 'العنوان', icon: <MapPin size={18} /> },
-                                        { id: 'showPhone', label: 'رقم الهاتف', icon: <Phone size={18} /> },
+                                        { id: 'showName', label: t('settings.storeNameLabel'), icon: <Store size={18} /> },
+                                        { id: 'showAddress', label: t('settings.addressLabel'), icon: <MapPin size={18} /> },
+                                        { id: 'showPhone', label: t('settings.phoneLabel'), icon: <Phone size={18} /> },
                                     ].map((item) => (
                                         <div key={item.id} className="p-4 rounded-2xl bg-surface-muted border border-border flex items-center justify-between group transition-all hover:border-primary/20">
                                             <div className="flex items-center gap-3">
@@ -505,8 +510,8 @@ const SettingsScreen: React.FC = () => {
                                         <LayoutIcon size={24} />
                                     </div>
                                     <div>
-                                        <p className="font-black text-foreground">الطباعة التلقائية</p>
-                                        <p className="text-xs text-muted-foreground font-medium">طباعة الإيصال مباشرة بعد إتمام العملية</p>
+                                        <p className="font-black text-foreground">{t('settings.autoPrint')}</p>
+                                        <p className="text-xs text-muted-foreground font-medium">{t('settings.autoPrintDesc')}</p>
                                     </div>
                                 </div>
                                 <Switch
@@ -523,7 +528,7 @@ const SettingsScreen: React.FC = () => {
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl font-black text-foreground flex items-center gap-2">
                                 <Palette size={20} className="text-primary" />
-                                المظهر البصري
+                                {t('settings.appearance')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-8 pt-4 space-y-6">
@@ -539,8 +544,8 @@ const SettingsScreen: React.FC = () => {
                                         {isDark ? <Moon size={24} fill="currentColor" /> : <Sun size={24} />}
                                     </div>
                                     <div>
-                                        <p className="font-black text-foreground">{isDark ? 'الوضع الليلي' : 'الوضع النهاري'}</p>
-                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">تغيير لغة التصميم</p>
+                                        <p className="font-black text-foreground">{isDark ? t('settings.darkMode') : t('settings.lightMode')}</p>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{t('settings.toggleTheme')}</p>
                                     </div>
                                 </div>
                                 <div className="w-10 h-6 bg-surface-bg rounded-full border border-border p-1">
@@ -560,12 +565,12 @@ const SettingsScreen: React.FC = () => {
                             <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-4">
                                 <Database size={24} />
                             </div>
-                            <CardTitle className="text-2xl font-black">سيادة البيانات</CardTitle>
-                            <CardDescription className="text-amber-50 font-medium">سيتم تخزين كافة البيانات محلياً في مجلد الأرشفة لضمان الخصوصية التامة.</CardDescription>
+                            <CardTitle className="text-2xl font-black">{t('settings.dataSovereignty')}</CardTitle>
+                            <CardDescription className="text-amber-50 font-medium">{t('settings.dataSovereigntyDesc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="p-8 pt-0 space-y-6">
                             <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-amber-100 mb-2">مسار الأرشفة الحالي</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-amber-100 mb-2">{t('settings.archivePath')}</p>
                                 <p className="text-xs font-mono break-all opacity-90">{settings?.archivePath || 'C:/JOECASHIER/Archives'}</p>
                             </div>
                             <Button
@@ -574,7 +579,7 @@ const SettingsScreen: React.FC = () => {
                                 className="w-full h-14 rounded-2xl bg-white text-amber-600 hover:bg-amber-50 font-black text-lg gap-3 transition-all active:scale-95 border-none shadow-lg"
                             >
                                 {archiving ? <Loader2 size={24} className="animate-spin" /> : <Archive size={24} />}
-                                {archiving ? 'جاري الأرشفة...' : 'أرشفة البيانات الآن'}
+                                {archiving ? t('settings.archiving') : t('settings.archiveNow')}
                             </Button>
                         </CardContent>
                     </Card>
@@ -585,8 +590,8 @@ const SettingsScreen: React.FC = () => {
                             <ShieldCheck size={24} strokeWidth={2.5} />
                         </div>
                         <div>
-                            <p className="text-sm font-black text-foreground">النظام مؤمن تماماً</p>
-                            <p className="text-[10px] text-muted-foreground font-bold">تشفير AES-256 للبيانات الحساسة</p>
+                            <p className="text-sm font-black text-foreground">{t('settings.systemSecured')}</p>
+                            <p className="text-[10px] text-muted-foreground font-bold">{t('settings.encryption')}</p>
                         </div>
                     </div>
                 </div>
@@ -598,25 +603,28 @@ const SettingsScreen: React.FC = () => {
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl font-black text-foreground flex items-center gap-2">
                                 <Globe size={24} className="text-primary" />
-                                {t('settings.language', 'لغة النظام')}
+                                {t('settings.language')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-8 pt-0 space-y-4">
-                            {languages.map((lng) => (
-                                <div
-                                    key={lng.code}
-                                    onClick={() => i18n.changeLanguage(lng.code)}
-                                    className={cn(
-                                        "flex items-center justify-between p-4 rounded-3xl border-2 transition-all cursor-pointer",
-                                        i18n.language === lng.code
-                                            ? "bg-primary/10 border-primary shadow-lg"
-                                            : "bg-surface-muted border-transparent hover:border-primary/20"
-                                    )}
-                                >
-                                    <span className="font-bold">{lng.name}</span>
-                                    {i18n.language === lng.code && <div className="w-3 h-3 rounded-full bg-primary" />}
-                                </div>
-                            ))}
+                            {appLanguages.map((lng) => {
+                                const isActive = (i18n.language || '').startsWith(lng.code);
+                                return (
+                                    <div
+                                        key={lng.code}
+                                        onClick={() => i18n.changeLanguage(lng.code)}
+                                        className={cn(
+                                            "flex items-center justify-between p-4 rounded-3xl border-2 transition-all cursor-pointer",
+                                            isActive
+                                                ? "bg-primary/10 border-primary shadow-lg"
+                                                : "bg-surface-muted border-transparent hover:border-primary/20"
+                                        )}
+                                    >
+                                        <span className="font-bold">{lng.name}</span>
+                                        {isActive && <div className="w-3 h-3 rounded-full bg-primary" />}
+                                    </div>
+                                );
+                            })}
                         </CardContent>
                     </Card>
 
@@ -625,13 +633,13 @@ const SettingsScreen: React.FC = () => {
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl font-black text-foreground flex items-center gap-2">
                                 <Coins size={24} className="text-primary" />
-                                {t('settings.pricingOpts', 'تسمية الأسعار')}
+                                {t('settings.pricingOpts')}
                             </CardTitle>
-                            <CardDescription>{t('settings.pricingDesc', 'تخصيص مسميات أسعار الجملة والقطاعي')}</CardDescription>
+                            <CardDescription>{t('settings.pricingDesc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="p-8 pt-0 space-y-6">
                             <div className="space-y-3">
-                                <Label className="text-xs font-black uppercase tracking-widest">{t('settings.tier1', 'السعر الأول (قطاعي)')}</Label>
+                                <Label className="text-xs font-black uppercase tracking-widest">{t('settings.tier1')}</Label>
                                 <Input
                                     value={settings?.pricingOpts?.tier1Name || ''}
                                     onChange={(e) => updateSetting('pricingOpts', { ...settings?.pricingOpts, tier1Name: e.target.value } as any)}
@@ -641,7 +649,7 @@ const SettingsScreen: React.FC = () => {
 
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <Label className="text-xs font-black uppercase tracking-widest">{t('settings.tier2', 'السعر الثاني (جملة)')}</Label>
+                                    <Label className="text-xs font-black uppercase tracking-widest">{t('settings.tier2')}</Label>
                                     <Switch
                                         checked={settings?.pricingOpts?.showTier2 ?? true}
                                         onCheckedChange={(val) => updateSetting('pricingOpts', { ...settings?.pricingOpts, showTier2: val } as any)}
@@ -658,18 +666,18 @@ const SettingsScreen: React.FC = () => {
 
                             <div className="pt-4 border-t border-border mt-4">
                                 <div className="flex items-center justify-between mb-4">
-                                    <Label className="text-xs font-black uppercase tracking-widest">{t('settings.extraTiers', 'أسعار إضافية')}</Label>
+                                    <Label className="text-xs font-black uppercase tracking-widest">{t('settings.extraTiers')}</Label>
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         className="rounded-xl"
                                         onClick={() => {
-                                            const newTiers = [...(settings?.pricingOpts?.customTiers || []), { id: `tier_${Date.now()}`, name: 'سعر جديد' }];
+                                            const newTiers = [...(settings?.pricingOpts?.customTiers || []), { id: `tier_${Date.now()}`, name: t('settings.newPrice') }];
                                             updateSetting('pricingOpts', { ...settings?.pricingOpts, customTiers: newTiers } as any);
                                         }}
                                     >
                                         <Plus size={16} className="mr-2" />
-                                        إضافة سعر
+                                        {t('settings.addPrice')}
                                     </Button>
                                 </div>
                                 <div className="space-y-3">
@@ -709,23 +717,23 @@ const SettingsScreen: React.FC = () => {
                     <Card className="rounded-[40px] border-none bg-surface-bg shadow-2xl shadow-foreground/5 overflow-hidden">
                         <CardContent className="p-8 grid grid-cols-2 md:grid-cols-4 gap-8">
                             <div className="flex flex-col gap-1">
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">إصدار النظام</span>
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('settings.systemVersion')}</span>
                                 <span className="text-xl font-black text-foreground">v1.2.5 <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-2">PRO</span></span>
                             </div>
                             <div className="flex flex-col gap-1">
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">نوع قاعدة البيانات</span>
-                                <span className="text-xl font-black text-foreground">SQLite (Local)</span>
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('settings.dbType')}</span>
+                                <span className="text-xl font-black text-foreground">{t('settings.dbTypeValue')}</span>
                             </div>
                             <div className="flex flex-col gap-1">
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">حالة الاتصال</span>
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('settings.connectionStatus')}</span>
                                 <span className="text-xl font-black text-emerald-500 flex items-center gap-2">
-                                    متصل نشط
+                                    {t('settings.connected')}
                                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                                 </span>
                             </div>
                             <div className="flex flex-col gap-1 text-left" dir="ltr">
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right mr-1">TRIAL EXPIRES</span>
-                                <span className="text-xl font-black text-foreground text-right">{new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB')}</span>
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right mr-1">{t('settings.trialExpires')}</span>
+                                <span className="text-xl font-black text-foreground text-right">{new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(getI18nLocale(i18n.language))}</span>
                             </div>
                         </CardContent>
                     </Card>

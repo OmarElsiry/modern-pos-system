@@ -33,7 +33,7 @@ export interface CommandContext {
 
 export interface CommandAction {
     id: string;
-    label: string;
+    labelKey: string;
     keywords: string[];
     icon: React.ReactNode;
     group: CommandGroup;
@@ -60,7 +60,7 @@ export const commandActions: CommandAction[] = [
     // Navigation
     {
         id: 'nav-pos',
-        label: 'نقطة البيع',
+        labelKey: 'commands.navPos',
         keywords: ['pos', 'sales', 'checkout', 'بيع', 'كاشير'],
         icon: <ShoppingCartWrapper />,
         group: 'navigation',
@@ -68,7 +68,7 @@ export const commandActions: CommandAction[] = [
     },
     {
         id: 'nav-dashboard',
-        label: 'لوحة التحكم',
+        labelKey: 'commands.navDashboard',
         keywords: ['dashboard', 'home', 'stats', 'رئيسية', 'احصائيات'],
         icon: <LayoutDashboardWrapper />,
         group: 'navigation',
@@ -76,7 +76,7 @@ export const commandActions: CommandAction[] = [
     },
     {
         id: 'nav-products',
-        label: 'المنتجات',
+        labelKey: 'commands.navProducts',
         keywords: ['products', 'items', 'inventory', 'منتجات', 'مخزون'],
         icon: <PackageWrapper />,
         group: 'navigation',
@@ -84,7 +84,7 @@ export const commandActions: CommandAction[] = [
     },
     {
         id: 'nav-categories',
-        label: 'الأقسام',
+        labelKey: 'commands.navCategories',
         keywords: ['categories', 'departments', 'groups', 'أقسام', 'تصنيفات'],
         icon: <LayersWrapper />,
         group: 'navigation',
@@ -92,7 +92,7 @@ export const commandActions: CommandAction[] = [
     },
     {
         id: 'nav-customers',
-        label: 'العملاء',
+        labelKey: 'commands.navCustomers',
         keywords: ['customers', 'clients', 'people', 'عملاء', 'زبائن'],
         icon: <UsersWrapper />,
         group: 'navigation',
@@ -100,7 +100,7 @@ export const commandActions: CommandAction[] = [
     },
     {
         id: 'nav-invoices',
-        label: 'سجل الفواتير',
+        labelKey: 'commands.navInvoices',
         keywords: ['invoices', 'history', 'sales', 'فواتير', 'سجل'],
         icon: <HistoryWrapper />,
         group: 'navigation',
@@ -108,7 +108,7 @@ export const commandActions: CommandAction[] = [
     },
     {
         id: 'nav-reports',
-        label: 'التقارير',
+        labelKey: 'commands.navReports',
         keywords: ['reports', 'analytics', 'charts', 'تقارير', 'تحليل'],
         icon: <BarChart3Wrapper />,
         group: 'navigation',
@@ -116,7 +116,7 @@ export const commandActions: CommandAction[] = [
     },
     {
         id: 'nav-settings',
-        label: 'الإعدادات',
+        labelKey: 'commands.navSettings',
         keywords: ['settings', 'config', 'preferences', 'اعدادات', 'ضبط'],
         icon: <SettingsWrapper />,
         group: 'navigation',
@@ -126,7 +126,7 @@ export const commandActions: CommandAction[] = [
     // Products
     {
         id: 'products-add',
-        label: 'إضافة منتج جديد',
+        labelKey: 'commands.productsAdd',
         keywords: ['add', 'create', 'new', 'product', 'item', 'انشاء', 'اضافة', 'منتج'],
         icon: <PlusWrapper />,
         group: 'products',
@@ -134,7 +134,7 @@ export const commandActions: CommandAction[] = [
     },
     {
         id: 'products-alerts',
-        label: 'تنبيهات المخزون',
+        labelKey: 'commands.productsAlerts',
         keywords: ['stock', 'alerts', 'notifications', 'low', 'تنبيهات', 'مخزون', 'نواقص'],
         icon: <BellWrapper />,
         group: 'products',
@@ -144,7 +144,7 @@ export const commandActions: CommandAction[] = [
     // Categories
     {
         id: 'categories-add',
-        label: 'إضافة قسم جديد',
+        labelKey: 'commands.categoriesAdd',
         keywords: ['add', 'create', 'new', 'category', 'group', 'انشاء', 'اضافة', 'قسم'],
         icon: <PlusWrapper />,
         group: 'categories',
@@ -154,7 +154,7 @@ export const commandActions: CommandAction[] = [
     // Customers
     {
         id: 'customers-add',
-        label: 'إضافة عميل جديد',
+        labelKey: 'commands.customersAdd',
         keywords: ['add', 'create', 'new', 'customer', 'client', 'انشاء', 'اضافة', 'عميل'],
         icon: <PlusWrapper />,
         group: 'customers',
@@ -164,19 +164,18 @@ export const commandActions: CommandAction[] = [
     // PDF Reports
     {
         id: 'pdf-sales',
-        label: 'تحميل تقرير المبيعات (PDF)',
+        labelKey: 'commands.pdfSales',
         keywords: ['pdf', 'download', 'report', 'sales', 'تحميل', 'تقرير', 'مبيعات'],
         icon: <FileTextWrapper />,
         group: 'pdf',
         action: async () => {
-            // Logic will be handled by ReportPDFService call when implemented
             const html = await ReportPDFService.generateSalesReportHTML();
             await ReportPDFService.generatePDF(html, 'sales-report.pdf');
         },
     },
     {
         id: 'pdf-inventory',
-        label: 'تحميل تقرير المخزون (PDF)',
+        labelKey: 'commands.pdfInventory',
         keywords: ['pdf', 'download', 'report', 'inventory', 'stock', 'تحميل', 'تقرير', 'مخزون'],
         icon: <FileTextWrapper />,
         group: 'pdf',
@@ -187,7 +186,7 @@ export const commandActions: CommandAction[] = [
     },
     {
         id: 'pdf-customers',
-        label: 'تحميل قائمة العملاء (PDF)',
+        labelKey: 'commands.pdfCustomers',
         keywords: ['pdf', 'download', 'report', 'customers', 'clients', 'تحميل', 'تقرير', 'عملاء'],
         icon: <FileTextWrapper />,
         group: 'pdf',
@@ -200,7 +199,7 @@ export const commandActions: CommandAction[] = [
     // System
     {
         id: 'system-fullscreen',
-        label: 'ملء الشاشة',
+        labelKey: 'commands.fullscreen',
         keywords: ['fullscreen', 'screen', 'toggle', 'شاشة', 'كاملة'],
         icon: <MaximizeWrapper />,
         group: 'system',
@@ -216,7 +215,7 @@ export const commandActions: CommandAction[] = [
     },
     {
         id: 'system-archive',
-        label: 'أرشيف النظام',
+        labelKey: 'commands.archive',
         keywords: ['archive', 'backup', 'history', 'ارشيف', 'نسخ'],
         icon: <ArchiveWrapper />,
         group: 'system',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-
+import { useTranslation } from 'react-i18next';
 import { CustomerSelect, Numpad, EmptyState } from '../components';
 import ReceiptPreview from '../components/ReceiptPreview';
 import { SalesService } from '../services/SalesService';
@@ -11,7 +11,6 @@ import { useTransaction } from '../hooks/useTransaction';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import { cn } from '@/lib/utils';
 
-// Shadcn Components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,20 +25,16 @@ import {
 import { Search, ShoppingCart, Plus, Minus, Trash2, MoreVertical, ShoppingBag, CreditCard, Ban } from 'lucide-react';
 
 const POSScreen: React.FC = () => {
-  // --- Refs & Services ---
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const { t } = useTranslation();
   const salesService = useMemo(() => new SalesService(), []);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const settingsService = useMemo(() => new SettingsService(), []);
 
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const touchStart = useRef<number | null>(null);
 
-  // --- Hooks ---
   const transaction = useTransaction(salesService);
   const searchHook = useProductSearch();
 
-  // --- States ---
   const [error, setError] = useState<string>('');
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -66,17 +61,16 @@ const POSScreen: React.FC = () => {
     return () => { mounted = false; };
   }, [settingsService]);
 
-  // --- Business Logic Handlers ---
   const handlePricingTypeChange = useCallback(async (type: string) => {
     await transaction.setPricingType(type);
 
     let tierName = '';
-    if (type === 'retail') tierName = settings?.pricingOpts?.tier1Name || 'قطاعي';
-    else if (type === 'wholesale') tierName = settings?.pricingOpts?.tier2Name || 'جملة';
-    else tierName = settings?.pricingOpts?.customTiers?.find(t => t.id === type)?.name || 'سعر آخر';
+    if (type === 'retail') tierName = settings?.pricingOpts?.tier1Name || t('pos.tier1Default');
+    else if (type === 'wholesale') tierName = settings?.pricingOpts?.tier2Name || t('pos.tier2Default');
+    else tierName = settings?.pricingOpts?.customTiers?.find(t => t.id === type)?.name || t('pos.otherPrice');
 
-    showToast.success(`تم تغيير نوع التسعير إلى ${tierName}`);
-  }, [transaction, settings]);
+    showToast.success(t('pos.toastPricingChanged', { name: tierName }));
+  }, [transaction, settings, t]);
 
   const handleCustomerSelect = useCallback((customer: Customer | null) => {
     transaction.setCustomer(customer?.id || null);
@@ -89,11 +83,10 @@ const POSScreen: React.FC = () => {
     if (success) {
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 2000);
-      showToast.success('تم إضافة المنتج بنجاح');
+      showToast.success(t('pos.toastProductAdded'));
     }
-  }, [transaction]);
+  }, [transaction, t]);
 
-  // Use the Barcode Scanner Hook
   useBarcodeScanner({
     onScan: handleBarcodeScanned,
     minLength: 3,
@@ -111,9 +104,9 @@ const POSScreen: React.FC = () => {
       transaction.updateQuantity(undoItem.id, undoItem.quantity);
       setUndoItem(null);
       if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
-      showToast.success('تم التراجع عن الحذف');
+      showToast.success(`${t('pos.toastUndo')} ${t('pos.toastProductRemoved')}`);
     }
-  }, [undoItem, transaction]);
+  }, [undoItem, transaction, t]);
 
   const handleRemoveItem = useCallback((itemId: string) => {
     const itemToRemove = transaction.invoice?.items.find(i => i.id === itemId);
@@ -143,15 +136,15 @@ const POSScreen: React.FC = () => {
       if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
       undoTimeoutRef.current = setTimeout(() => setUndoItem(null), 5000);
 
-      showToast.success('تم حذف المنتج', {
+      showToast.success(t('pos.toastProductRemoved'), {
         duration: 5000,
         action: {
-          label: 'تراجع',
+          label: t('pos.toastUndo'),
           onClick: () => handleUndoRemove()
         }
       });
     }
-  }, [transaction, handleUndoRemove]);
+  }, [transaction, handleUndoRemove, t]);
 
   const handleProductSelect = useCallback((product: Product) => {
     handleBarcodeScanned(product.barcode);
@@ -173,13 +166,11 @@ const POSScreen: React.FC = () => {
       }
 
       const qty = parseFloat(next);
-
-      // Enforce stock limit
       const item = transaction.invoice?.items.find(i => i.id === activeItemId);
       if (item) {
         const product = searchHook.results.find(p => p.id === item.productId);
         if (product && qty > product.stockQuantity) {
-          showToast.error(`لا يمكن تجاوز المخزن المتاح (${product.stockQuantity})`);
+          showToast.error(t('pos.toastStockExceeded', { stock: product.stockQuantity }));
           return prev;
         }
       }
@@ -187,7 +178,7 @@ const POSScreen: React.FC = () => {
       if (!isNaN(qty)) handleQuantityChange(activeItemId, qty);
       return next;
     });
-  }, [activeItemId, handleQuantityChange]);
+  }, [activeItemId, handleQuantityChange, t]);
 
   const handleNumpadBackspace = useCallback(() => {
     if (!activeItemId) return;
@@ -209,30 +200,26 @@ const POSScreen: React.FC = () => {
     setError('');
     const result = await transaction.complete();
     if (result) {
-      showToast.success('تم إتمام الفاتورة بنجاح! رقم الفاتورة: ' + result.invoiceNumber, 5000);
+      showToast.success(t('pos.toastInvoiceCompleted', { number: result.invoiceNumber }), 5000);
       setIsCompleteModalOpen(false);
 
       const savedInvoice = await window.electronAPI.invoices.getById(result.id || '');
       if (savedInvoice) {
         setCompletedInvoice(savedInvoice);
-
-        // Refresh product list immediately to update stock alerts
         searchHook.refresh();
-
         setShowReceiptPreview(true);
       }
     } else {
-      showToast.error('فشل إتمام الفاتورة');
+      showToast.error(t('pos.toastInvoiceFailed'));
     }
   };
 
   const handleCancelInvoice = () => {
     transaction.clear();
-    showToast.success('تم إلغاء الفاتورة');
+    showToast.success(t('pos.toastInvoiceCancelled'));
     setIsCancelModalOpen(false);
   };
 
-  // --- Touch Handlers (Swipe to Delete) ---
   const handleTouchStart = (e: React.TouchEvent, _itemId: string) => {
     touchStart.current = e.touches[0].clientX;
   };
@@ -241,7 +228,6 @@ const POSScreen: React.FC = () => {
     if (touchStart.current === null) return;
     const currentTouch = e.touches[0].clientX;
     const diff = currentTouch - touchStart.current;
-
     if (diff < 0 && diff > -100) {
       setSwipeTranslation(prev => ({ ...prev, [itemId]: diff }));
     }
@@ -257,14 +243,12 @@ const POSScreen: React.FC = () => {
     touchStart.current = null;
   };
 
-  // --- Effects ---
   useEffect(() => {
     if (!transaction.isLoading && !transaction.invoice) {
       transaction.setPricingType('wholesale');
     }
   }, [transaction.isLoading, transaction.invoice]);
 
-  // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'F3') {
@@ -281,53 +265,39 @@ const POSScreen: React.FC = () => {
       }
       if (e.key === 'F9') {
         e.preventDefault();
-        // Keyboard support for multiple tiers is complex, just toggle wholesale/retail for F9
         handlePricingTypeChange(transaction.invoice?.pricingType === 'wholesale' ? 'retail' : 'wholesale');
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [transaction.invoice, isCompleteModalOpen, isNumpadOpen, handlePricingTypeChange]);
 
-  // Numpad Keyboard support
   useEffect(() => {
     if (!isNumpadOpen) return;
-
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key >= '0' && e.key <= '9') {
-        handleNumpadInput(e.key);
-      } else if (e.key === '.') {
-        handleNumpadInput('.');
-      } else if (e.key === 'Backspace') {
-        handleNumpadBackspace();
-      } else if (e.key === 'Enter') {
-        setIsNumpadOpen(false);
-      } else if (e.key === 'c' || e.key === 'C') {
-        handleNumpadClear();
-      }
+      if (e.key >= '0' && e.key <= '9') handleNumpadInput(e.key);
+      else if (e.key === '.') handleNumpadInput('.');
+      else if (e.key === 'Backspace') handleNumpadBackspace();
+      else if (e.key === 'Enter') setIsNumpadOpen(false);
+      else if (e.key === 'c' || e.key === 'C') handleNumpadClear();
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isNumpadOpen, handleNumpadInput, handleNumpadBackspace, handleNumpadClear]);
 
-  // Memoized values
   const hasItems = useMemo(() => (transaction.invoice?.items.length ?? 0) > 0, [transaction.invoice?.items.length]);
 
   if (!transaction.invoice) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <div className="rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
-        <p className="text-slate-500 font-medium">جاري التحميل...</p>
+        <p className="text-slate-500 font-medium">{t('pos.loading')}</p>
       </div>
     );
   }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-4 h-[calc(100vh-80px)] p-4 bg-app-bg overflow-hidden relative pos-screen" dir="rtl">
-
-      {/* --- Left Column: Product Selection --- */}
       <div className="flex flex-col gap-4 overflow-hidden h-full">
         <div className="flex gap-4 p-3 bg-surface-bg rounded-2xl border border-border shadow-sm items-center">
           <div className="relative flex-1">
@@ -338,7 +308,7 @@ const POSScreen: React.FC = () => {
                 "pr-12 h-11 rounded-xl border-slate-200 focus:border-slate-400 outline-none text-lg",
                 showSuccess && "border-emerald-500 ring-emerald-500"
               )}
-              placeholder="ابحث بالاسم أو الباركود... (F3)"
+              placeholder={t('pos.searchPlaceholder')}
               value={searchHook.query}
               onChange={(e) => searchHook.setQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -363,7 +333,7 @@ const POSScreen: React.FC = () => {
               <div className="flex space-x-4">
                 <div className="rounded-full bg-surface-muted h-10 w-10"></div>
               </div>
-              <span>جاري البحث عن المنتجات...</span>
+              <span>{t('pos.searching')}</span>
             </div>
           ) : searchHook.results.length > 0 ? (
             searchHook.results.map(product => (
@@ -384,11 +354,11 @@ const POSScreen: React.FC = () => {
                     <h3 className="font-bold text-foreground text-[11px] line-clamp-1 leading-tight">{product.name}</h3>
                     <div className="flex justify-between items-end">
                       <div className="text-lg font-black text-foreground leading-none">
-                        {(transaction.invoice!.pricingType === 'wholesale' ? product.wholesalePrice : transaction.invoice!.pricingType === 'retail' ? product.retailPrice : (product.metadata?.customPrices?.[transaction.invoice!.pricingType] || product.retailPrice)).toFixed(0)} <span className="text-[10px] font-bold text-muted-foreground">ج.م</span>
+                        {(transaction.invoice!.pricingType === 'wholesale' ? product.wholesalePrice : transaction.invoice!.pricingType === 'retail' ? product.retailPrice : (product.metadata?.customPrices?.[transaction.invoice!.pricingType] || product.retailPrice)).toFixed(0)} <span className="text-[10px] font-bold text-muted-foreground">{t('pos.currencySymbol')}</span>
                       </div>
                       {product.stockQuantity <= 5 && (
                         <span className="text-[10px] bg-red-50 text-red-600 font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">
-                          نقص: {product.stockQuantity}
+                          {t('pos.stockLow', { count: product.stockQuantity })}
                         </span>
                       )}
                     </div>
@@ -398,22 +368,19 @@ const POSScreen: React.FC = () => {
             ))
           ) : (
             <div className="col-span-full h-full flex items-center justify-center">
-              <EmptyState title="ابدأ البحث عن منتجات لإضافتها" />
+              <EmptyState title={t('pos.searchStart')} />
             </div>
           )}
         </div>
       </div>
 
-      {/* --- Right Column: Cart Section --- */}
       <div className={cn(
         "flex flex-col h-full bg-surface-bg border border-border rounded-3xl overflow-hidden relative z-10 lg:translate-y-0",
         isMobileSettingsOpen ? "translate-y-0 fixed inset-0 z-50 rounded-none h-full" : "translate-y-[calc(100%-80px)] lg:relative max-lg:fixed max-lg:bottom-0 max-lg:left-0 max-lg:right-0 max-lg:h-[80vh] max-lg:rounded-t-[40px]"
       )}>
-
-        {/* Mobile Header */}
         <div className="lg:hidden p-4 border-b flex justify-between items-center bg-surface-muted">
           <Button variant="ghost" onClick={() => setIsMobileSettingsOpen(false)}><Ban size={20} /></Button>
-          <div className="font-bold">سلة المشتريات</div>
+          <div className="font-bold">{t('pos.cart')}</div>
           <Button variant="ghost" onClick={handleCancelInvoice} className="text-red-500"><Trash2 size={20} /></Button>
         </div>
 
@@ -423,14 +390,14 @@ const POSScreen: React.FC = () => {
               className={cn("flex-none min-w-[80px] flex items-center justify-center p-2 text-sm font-bold rounded-lg transition-all", transaction.invoice!.pricingType === 'retail' ? "bg-surface-bg text-foreground shadow-sm border border-border" : "text-muted-foreground hover:text-foreground")}
               onClick={() => handlePricingTypeChange('retail')}
             >
-              {settings?.pricingOpts?.tier1Name || 'قطاعي'}
+              {settings?.pricingOpts?.tier1Name || t('pos.tier1Default')}
             </button>
             {settings?.pricingOpts?.showTier2 !== false && (
               <button
                 className={cn("flex-none min-w-[80px] flex items-center justify-center p-2 text-sm font-bold rounded-lg transition-all", transaction.invoice!.pricingType === 'wholesale' ? "bg-surface-bg text-foreground shadow-sm border border-border" : "text-muted-foreground hover:text-foreground")}
                 onClick={() => handlePricingTypeChange('wholesale')}
               >
-                {settings?.pricingOpts?.tier2Name || 'جملة'}
+                {settings?.pricingOpts?.tier2Name || t('pos.tier2Default')}
               </button>
             )}
             {(settings?.pricingOpts?.customTiers || []).map(tier => (
@@ -454,7 +421,7 @@ const POSScreen: React.FC = () => {
           {!hasItems ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground/30 gap-6">
               <ShoppingCart className="h-20 w-20 stroke-[1]" />
-              <p className="font-bold text-lg">السلة فارغة</p>
+              <p className="font-bold text-lg">{t('pos.emptyCart')}</p>
             </div>
           ) : (
             transaction.invoice!.items.map((item) => (
@@ -471,11 +438,10 @@ const POSScreen: React.FC = () => {
               >
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-foreground text-sm truncate uppercase tracking-tight">{item.productName}</div>
-                  <div className="text-xs font-black text-muted-foreground mt-0.5">{item.unitPrice.toFixed(2)} ج.م</div>
+                  <div className="text-xs font-black text-muted-foreground mt-0.5">{item.unitPrice.toFixed(2)} {t('pos.currencySymbol')}</div>
                 </div>
 
                 <div className="flex flex-col items-end gap-2 min-w-[120px]">
-                  {/* Quantity Counter (Above Price) */}
                   <div className="flex items-center gap-1 bg-surface-muted rounded-xl p-0.5 border border-border shadow-inner scale-90 origin-right">
                     <Button
                       variant="ghost"
@@ -507,13 +473,12 @@ const POSScreen: React.FC = () => {
                     </Button>
                   </div>
 
-                  {/* Price Breakdown and Total */}
                   <div className="flex flex-col items-end leading-tight">
                     <div className="text-[10px] font-bold text-muted-foreground uppercase opacity-70">
                       {item.quantity} × {item.unitPrice.toFixed(2)}
                     </div>
                     <div className="font-black text-foreground text-sm">
-                      {item.totalPrice.toFixed(0)} <span className="text-[10px] text-muted-foreground">ج.م</span>
+                      {item.totalPrice.toFixed(0)} <span className="text-[10px] text-muted-foreground">{t('pos.currencySymbol')}</span>
                     </div>
                   </div>
                 </div>
@@ -531,19 +496,17 @@ const POSScreen: React.FC = () => {
           )}
         </div>
 
-        {/* Footer with Totals */}
         <div className="mt-auto pt-6 p-4 bg-slate-950 text-white rounded-t-[32px] space-y-4 shadow-[0_-8px_30px_rgb(0,0,0,0.1)]">
-          {/* Current Invoice */}
           <div className="space-y-1 px-2">
             <div className="flex justify-between items-center text-slate-400 text-xs font-bold uppercase tracking-widest">
-              <span>عدد الأصناف</span>
+              <span>{t('pos.itemsCount')}</span>
               <span className="text-white bg-white/10 px-2 py-0.5 rounded-full">{transaction.invoice!.items.length}</span>
             </div>
             <div className="flex justify-between items-baseline pt-2 border-t border-white/10">
-              <span className="text-lg font-bold text-slate-300">الإجمالي</span>
+              <span className="text-lg font-bold text-slate-300">{t('pos.total')}</span>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-black tracking-tight text-white">{transaction.invoice.totalAmount.toFixed(0)}</span>
-                <span className="text-sm font-bold text-slate-400">جنية</span>
+                <span className="text-sm font-bold text-slate-400">{t('pos.currencyWord')}</span>
               </div>
             </div>
           </div>
@@ -556,7 +519,7 @@ const POSScreen: React.FC = () => {
               disabled={!hasItems}
             >
               <CreditCard size={22} className="ml-2" />
-              إتمام البيع
+              {t('pos.completeSale')}
             </Button>
             <Button
               variant="ghost"
@@ -570,12 +533,11 @@ const POSScreen: React.FC = () => {
         </div>
       </div>
 
-      {/* --- Modals (Dialogs) --- */}
       <Dialog open={isCompleteModalOpen} onOpenChange={setIsCompleteModalOpen}>
         <DialogContent className="rounded-3xl border-none p-0 overflow-hidden bg-surface-bg shadow-2xl">
           <div className="bg-slate-950 p-8 text-white">
-            <DialogTitle className="text-2xl font-black mb-2">تأكيد العملية</DialogTitle>
-            <DialogDescription className="text-slate-400">سيتم إتمام البيع وعرض خيارات الطباعة والتحميل.</DialogDescription>
+            <DialogTitle className="text-2xl font-black mb-2">{t('pos.confirmTitle')}</DialogTitle>
+            <DialogDescription className="text-slate-400">{t('pos.confirmDesc')}</DialogDescription>
           </div>
 
           <div className="p-8 space-y-6">
@@ -583,12 +545,12 @@ const POSScreen: React.FC = () => {
 
             <div className="space-y-4">
               <div className="flex justify-between items-center bg-surface-muted p-4 rounded-2xl">
-                <span className="text-muted-foreground font-bold uppercase text-xs">نوع السعر</span>
-                <span className="font-black text-foreground">{transaction.invoice?.pricingType === 'wholesale' ? (settings?.pricingOpts?.tier2Name || 'سعر جملة') : transaction.invoice?.pricingType === 'retail' ? (settings?.pricingOpts?.tier1Name || 'سعر قطاعي') : (settings?.pricingOpts?.customTiers?.find(t => t.id === transaction.invoice?.pricingType)?.name || 'سعر مخصص')}</span>
+                <span className="text-muted-foreground font-bold uppercase text-xs">{t('pos.priceType')}</span>
+                <span className="font-black text-foreground">{transaction.invoice?.pricingType === 'wholesale' ? (settings?.pricingOpts?.tier2Name || t('pos.tier2Default')) : transaction.invoice?.pricingType === 'retail' ? (settings?.pricingOpts?.tier1Name || t('pos.tier1Default')) : (settings?.pricingOpts?.customTiers?.find(t => t.id === transaction.invoice?.pricingType)?.name || t('pos.otherPrice'))}</span>
               </div>
               <div className="flex justify-between items-center py-4 px-2 border-b border-border">
-                <span className="text-muted-foreground font-bold">مجموع الفاتورة</span>
-                <span className="text-3xl font-black text-foreground">{transaction.invoice?.totalAmount.toFixed(2)} ج.م</span>
+                <span className="text-muted-foreground font-bold">{t('pos.invoiceTotal')}</span>
+                <span className="text-3xl font-black text-foreground">{transaction.invoice?.totalAmount.toFixed(2)} {t('pos.currencySymbol')}</span>
               </div>
             </div>
 
@@ -598,13 +560,13 @@ const POSScreen: React.FC = () => {
                 className="flex-1 h-12 rounded-xl border-border font-bold bg-transparent"
                 onClick={() => setIsCompleteModalOpen(false)}
               >
-                تراجع
+                {t('common.back')}
               </Button>
               <Button
                 className="flex-1 h-12 rounded-xl bg-primary hover:bg-primary/90 font-bold text-primary-foreground"
                 onClick={handleCompleteInvoice}
               >
-                تأكيد وإتمام العملية
+                {t('pos.confirmComplete')}
               </Button>
             </div>
           </div>
@@ -614,20 +576,19 @@ const POSScreen: React.FC = () => {
       <Dialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
         <DialogContent className="rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">إلغاء الفاتورة؟</DialogTitle>
+            <DialogTitle className="text-xl font-bold">{t('pos.cancelInvoice')}</DialogTitle>
             <DialogDescription className="py-4">
-              هل أنت متأكد من مسح جميع محتويات السلة والبدء من جديد؟
+              {t('pos.cancelDesc')}
             </DialogDescription>
           </DialogHeader>
 
           <DialogFooter className="gap-3">
-            <Button variant="ghost" onClick={() => setIsCancelModalOpen(false)} className="font-bold">لا، العودة</Button>
-            <Button variant="destructive" onClick={handleCancelInvoice} className="font-bold rounded-xl px-8">نعم، مسح الكل</Button>
+            <Button variant="ghost" onClick={() => setIsCancelModalOpen(false)} className="font-bold">{t('pos.noBack')}</Button>
+            <Button variant="destructive" onClick={handleCancelInvoice} className="font-bold rounded-xl px-8">{t('pos.yesClear')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* --- Other Components --- */}
       {showReceiptPreview && completedInvoice && (
         <ReceiptPreview
           invoice={completedInvoice}
@@ -659,8 +620,6 @@ const POSScreen: React.FC = () => {
         currentQuantity={numpadBuffer}
         maxStock={searchHook.results.find(p => p.id === transaction.invoice?.items.find(i => i.id === activeItemId)?.productId)?.stockQuantity}
       />
-
-      {/* Hidden container for printing removed as we use PDF download now */}
     </div>
   );
 };

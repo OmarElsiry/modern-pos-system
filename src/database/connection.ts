@@ -5,6 +5,8 @@ import type { Database as SqliteDatabase } from 'better-sqlite3';
 const Database = typeof require !== 'undefined' ? eval('require')('better-sqlite3') : null;
 const path = typeof require !== 'undefined' ? eval('require')('path') : null;
 const fs = typeof require !== 'undefined' ? eval('require')('fs') : null;
+const electron = typeof require !== 'undefined' ? eval('require')('electron') : null;
+const app = electron ? electron.app : null;
 
 let db: any | null = null;
 let isInitialized = false;
@@ -215,10 +217,12 @@ export function initializeDatabase(configOrPath?: DatabaseConfig | string): any 
       return db;
     }
 
-    // In production, we want the database to be next to the executable (Portable mode)
-    // In development, we use the current working directory (Project root)
+    // In production, use userData directory (user-writable, sandbox/portable safe)
+    // In development, use the current working directory (Project root)
     const isProduction = typeof process !== 'undefined' && (process.env.NODE_ENV === 'production' || !!(process as any).resourcesPath);
-    const baseDir = isProduction ? path.dirname(process.execPath) : process.cwd();
+    const baseDir = isProduction
+      ? app.getPath('userData')
+      : process.cwd();
 
     const defaultPath = path.join(baseDir, 'pos-database.db');
     const finalPath = config.dbPath || defaultPath;

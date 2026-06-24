@@ -1,4 +1,6 @@
 import React, { memo } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 import {
     BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
@@ -20,6 +22,7 @@ interface ReportBarChartProps {
 }
 
 export const ReportBarChart: React.FC<ReportBarChartProps> = memo(({ data }) => {
+    const { t } = useTranslation();
     return (
         <ResponsiveContainer width="100%" height={400}>
             <BarChart data={data} layout="vertical">
@@ -28,8 +31,8 @@ export const ReportBarChart: React.FC<ReportBarChartProps> = memo(({ data }) => 
                 <YAxis dataKey="productName" type="category" width={150} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="revenue" fill="#0f172a" name="الإيرادات (ج.م)" />
-                <Bar dataKey="quantity" fill="#64748b" name="الكمية" />
+                <Bar dataKey="revenue" fill="#0f172a" name={t('reports.totalSales')} />
+                <Bar dataKey="quantity" fill="#64748b" name={t('common.total')} />
             </BarChart>
         </ResponsiveContainer>
     );
@@ -40,19 +43,20 @@ interface ReportLineChartProps {
 }
 
 export const ReportLineChart: React.FC<ReportLineChartProps> = memo(({ data }) => {
+    const { t } = useTranslation();
     return (
         <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                     dataKey="date"
-                    tickFormatter={(tick) => new Date(tick).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' })}
+                    tickFormatter={(tick) => new Date(tick).toLocaleDateString(i18n.language === 'ar' ? 'ar-EG' : i18n.language === 'fa' ? 'fa-IR' : i18n.language, { month: 'short', day: 'numeric' })}
                 />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="sales" stroke="#0f172a" name="المبيعات (ج.م)" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="invoices" stroke="#64748b" name="عدد الفواتير" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="sales" stroke="#0f172a" name={t('reports.totalSales')} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="invoices" stroke="#64748b" name={t('reports.invoicesCount')} strokeWidth={2} dot={false} />
             </LineChart>
         </ResponsiveContainer>
     );

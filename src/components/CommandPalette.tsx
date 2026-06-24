@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { commandActions, CommandContext as ICommandContext } from '../config/commandActions';
 import { PrintService } from '../services/PrintService';
 import { SettingsService } from '../services/SettingsService';
-// Using a safe fallback if ReportService isn't available yet or to avoid circular dependencies if any
 import { ReportService } from '../services/ReportService';
+import { useTranslation } from 'react-i18next';
 import './CommandPalette.css';
 
 interface CommandPaletteProps {
@@ -15,6 +15,7 @@ interface CommandPaletteProps {
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ toggleStockAlerts }) => {
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     // Toggle with Ctrl+K
     useEffect(() => {
@@ -51,25 +52,25 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ toggleStockAlert
     }, []);
 
     const groupLabels: Record<string, string> = {
-        navigation: 'التنقل',
-        products: 'المنتجات',
-        categories: 'الأقسام',
-        customers: 'العملاء',
-        pdf: 'تقارير PDF',
-        system: 'النظام',
+        navigation: t('commandPalette.groupNavigation'),
+        products: t('commandPalette.groupProducts'),
+        categories: t('commandPalette.groupCategories'),
+        customers: t('commandPalette.groupCustomers'),
+        pdf: t('commandPalette.groupPdfReports'),
+        system: t('commandPalette.groupSystem'),
     };
 
     return (
         <Command.Dialog
             open={open}
             onOpenChange={setOpen}
-            label="Global Command Menu"
+            label={t('commandPalette.label')}
             dir="rtl"
         >
-            <Command.Input placeholder="ابحث عن أمر... (مثال: إضافة منتج، المبيعات)" />
+            <Command.Input placeholder={t('commandPalette.searchPlaceholder')} />
 
             <Command.List>
-                <Command.Empty>لا توجد نتائج.</Command.Empty>
+                    <Command.Empty>{t('commandPalette.noResults')}</Command.Empty>
 
                 {Object.entries(groups).map(([groupKey, actions]) => (
                     <Command.Group key={groupKey} heading={groupLabels[groupKey] || groupKey}>
@@ -84,7 +85,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ toggleStockAlert
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
                                     {action.icon}
-                                    <span>{action.label}</span>
+                                    <span>{t(action.labelKey)}</span>
                                 </div>
                                 {action.shortcut && (
                                     <span style={{ fontSize: '10px', opacity: 0.5, marginLeft: 'auto' }}>

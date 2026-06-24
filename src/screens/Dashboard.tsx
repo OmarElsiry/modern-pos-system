@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 // Recharts moved to lazy loaded component
 import { ProductService } from '../services/ProductService';
 import { CustomerService } from '../services/CustomerService';
@@ -22,6 +24,7 @@ interface DashboardStats {
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats>({
     todaySales: 0,
     todayInvoices: 0,
@@ -59,7 +62,7 @@ const Dashboard: React.FC = () => {
         totalCustomers: customersResp.success ? customersResp.data.length : 0,
         recentInvoices: recentInvoicesResp.success ? recentInvoicesResp.data : [],
         weeklySales: weeklyData.map((d: any) => ({
-          date: new Date(d.date || new Date()).toLocaleDateString('ar-EG', { weekday: 'short' }),
+          date: new Date(d.date || new Date()).toLocaleDateString(i18n.language === 'ar' ? 'ar-EG' : i18n.language, { weekday: 'short' }),
           amount: d.sales || 0
         })),
       });
@@ -73,7 +76,8 @@ const Dashboard: React.FC = () => {
   }, [loadDashboardData]);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(amount);
+    const locale = i18n.language === 'ar' ? 'ar-EG' : i18n.language === 'fa' ? 'fa-IR' : i18n.language;
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: t('common.currency'), maximumFractionDigits: 0 }).format(amount);
   };
 
   return (
@@ -81,15 +85,15 @@ const Dashboard: React.FC = () => {
       {/* Header section with welcoming feel */}
       <div className="flex justify-between items-end mb-2">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">نظرة عامة</h1>
-          <p className="text-muted-foreground mt-1">مرحباً بك مجدداً في نظام كاشير جو للبيع.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('dashboard.pageTitle')}</h1>
+          <p className="text-muted-foreground mt-1">{t('dashboard.pageDesc')}</p>
         </div>
         <button
           onClick={() => navigate('/pos')}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold transition-all"
         >
           <Plus size={20} />
-          <span>فاتورة جديدة</span>
+          <span>{t('dashboard.newInvoice')}</span>
         </button>
       </div>
 
@@ -101,24 +105,24 @@ const Dashboard: React.FC = () => {
             <div className="p-3 bg-primary/10 rounded-xl text-primary">
               <TrendingUp size={24} />
             </div>
-            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">مبيعات اليوم</div>
+            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('dashboard.todaySales')}</div>
           </div>
           <div className="text-4xl font-black text-foreground mb-2">{formatCurrency(stats.todaySales)}</div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded text-xs font-bold">
-              +{stats.todayInvoices} عملية
+              +{stats.todayInvoices} {t('dashboard.operations')}
             </span>
-            <span className="text-xs text-muted-foreground">منذ بداية اليوم</span>
+            <span className="text-xs text-muted-foreground">{t('dashboard.sinceMorning')}</span>
           </div>
         </div>
 
         {/* Weekly Chart Card */}
         <div className="md:col-span-8 bg-surface-bg border border-border p-6 rounded-2xl shadow-sm overflow-hidden">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-foreground">أداء المبيعات الأسبوعي</h3>
+            <h3 className="font-bold text-foreground">{t('dashboard.weeklySalesPerformance')}</h3>
             <div className="flex items-center gap-1 text-muted-foreground text-sm">
               <div className="w-2 h-2 rounded-full bg-primary"></div>
-              <span>المبيعات بالجنيه</span>
+              <span>{t('dashboard.salesInEGP')}</span>
             </div>
           </div>
           <div className="h-[200px] -mx-4">
@@ -131,7 +135,7 @@ const Dashboard: React.FC = () => {
         {/* Secondary Stats Group */}
         <div className="md:col-span-3 bg-surface-bg border border-border p-6 rounded-2xl shadow-sm transition-shadow border-r-4 border-r-sky-500">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-muted-foreground uppercase tracking-tighter">إجمالي العملاء</span>
+            <span className="text-sm font-medium text-muted-foreground uppercase tracking-tighter">{t('dashboard.totalCustomers')}</span>
             <Users size={20} className="text-sky-500" />
           </div>
           <div className="text-3xl font-bold text-foreground">{stats.totalCustomers}</div>
@@ -139,7 +143,7 @@ const Dashboard: React.FC = () => {
 
         <div className="md:col-span-3 bg-surface-bg border border-border p-6 rounded-2xl shadow-sm transition-shadow border-r-4 border-r-primary">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-muted-foreground uppercase tracking-tighter">تشكيلة المنتجات</span>
+            <span className="text-sm font-medium text-muted-foreground uppercase tracking-tighter">{t('dashboard.totalProducts')}</span>
             <Package size={20} className="text-primary" />
           </div>
           <div className="text-3xl font-bold text-foreground">{stats.totalProducts}</div>
@@ -148,12 +152,12 @@ const Dashboard: React.FC = () => {
         {/* Activity Feed */}
         <div className="md:col-span-6 md:row-span-2 bg-surface-bg border border-border rounded-2xl shadow-sm flex flex-col h-full">
           <div className="p-6 border-b border-border flex justify-between items-center">
-            <h3 className="font-bold text-foreground">العمليات الأخيرة</h3>
+            <h3 className="font-bold text-foreground">{t('dashboard.recentInvoices')}</h3>
             <button
               onClick={() => navigate('/invoices')}
               className="text-xs font-bold text-muted-foreground hover:text-foreground flex items-center gap-1"
             >
-              عرض الكل <ArrowUpRight size={14} />
+              {t('dashboard.viewAll')} <ArrowUpRight size={14} />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-2">
@@ -161,11 +165,12 @@ const Dashboard: React.FC = () => {
               {stats.recentInvoices.map((invoice) => (
                 <div key={invoice.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-surface-muted transition-colors group">
                   <div className="w-10 h-10 rounded-lg bg-surface-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                    {/* DB stores cash customer name as 'عميل نقدي' regardless of locale; do not translate this comparison */}
                     {invoice.customerName === 'عميل نقدي' ? <Users size={18} /> : <ShoppingCart size={18} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-bold text-foreground truncate">{invoice.customerName}</div>
-                    <div className="text-xs text-muted-foreground">#{invoice.invoiceNumber} • {invoice.itemCount} منتجات</div>
+                    <div className="text-xs text-muted-foreground">#{invoice.invoiceNumber} &bull; {invoice.itemCount} {t('dashboard.products')}</div>
                   </div>
                   <div className="text-sm font-black text-foreground">{formatCurrency(invoice.totalAmount)}</div>
                 </div>
@@ -173,7 +178,7 @@ const Dashboard: React.FC = () => {
               {stats.recentInvoices.length === 0 && (
                 <div className="flex flex-col items-center justify-center p-12 text-muted-foreground">
                   <Package size={48} className="opacity-10 mb-2" />
-                  <p>لا توجد بيانات متاحة حالياً</p>
+                  <p>{t('dashboard.noData')}</p>
                 </div>
               )}
             </div>
@@ -185,8 +190,8 @@ const Dashboard: React.FC = () => {
           }`}>
           <div className="flex justify-between items-start">
             <div className="space-y-1">
-              <h3 className="font-bold text-foreground">تنبيهات المخزون</h3>
-              <p className="text-xs text-muted-foreground">المنتجات منخفضة الكمية</p>
+              <h3 className="font-bold text-foreground">{t('dashboard.stockAlerts')}</h3>
+              <p className="text-xs text-muted-foreground">{t('dashboard.lowStockProducts')}</p>
             </div>
             <AlertCircle className={stats.lowStockCount > 0 ? 'text-amber-500' : 'text-emerald-500'} size={24} />
           </div>
@@ -198,7 +203,7 @@ const Dashboard: React.FC = () => {
               onClick={() => navigate('/products')}
               className="mt-2 text-xs font-bold text-muted-foreground hover:text-foreground underline underline-offset-4"
             >
-              فحص المخزون
+              {t('dashboard.checkStock')}
             </button>
           </div>
         </div>
@@ -206,21 +211,21 @@ const Dashboard: React.FC = () => {
         {/* Quick Access Card */}
         <div className="md:col-span-3 bg-slate-900 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group">
           <div className="relative z-10 flex flex-col h-full justify-between">
-            <h3 className="font-bold text-sm text-slate-400">إجراءات البيانات</h3>
+            <h3 className="font-bold text-sm text-slate-400">{t('dashboard.dataActions')}</h3>
             <div className="grid grid-cols-2 gap-3 mt-4">
               <button
                 onClick={() => navigate('/products')}
                 className="flex flex-col items-center gap-2 p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
               >
                 <Package size={20} />
-                <span className="text-[10px] font-bold uppercase">المخزن</span>
+                <span className="text-[10px] font-bold uppercase">{t('dashboard.products')}</span>
               </button>
               <button
                 onClick={() => navigate('/customers')}
                 className="flex flex-col items-center gap-2 p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
               >
                 <Users size={20} />
-                <span className="text-[10px] font-bold uppercase">العملاء</span>
+                <span className="text-[10px] font-bold uppercase">{t('dashboard.customers')}</span>
               </button>
             </div>
           </div>
@@ -234,4 +239,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-

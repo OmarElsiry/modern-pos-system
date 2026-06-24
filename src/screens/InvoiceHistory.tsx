@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { SalesService } from '../services/SalesService';
 import { showToast } from '../utils/toast';
 import { cn } from '@/lib/utils';
@@ -76,6 +78,7 @@ const InvoiceHistory: React.FC = () => {
 
   const printService = useMemo(() => new PrintService(), []);
   const salesService = useMemo(() => new SalesService(), []);
+  const { t } = useTranslation();
 
   const handleSaveInvoicePDF = async () => {
     if (!selectedInvoice || !settings) return;
@@ -91,12 +94,12 @@ const InvoiceHistory: React.FC = () => {
         settings.businessInfo
       );
       if (result.success) {
-        showToast.success('تم حفظ الفاتورة بصيغة PDF');
+        showToast.success(t('invoices.toastSaved'));
       } else if (!result.cancelled) {
-        showToast.error('فشل حفظ الفاتورة: ' + result.error);
+        showToast.error(t('invoices.toastSaveFailed', { error: result.error }));
       }
     } catch (error) {
-      showToast.error('خطأ غير متوقع أثناء الحفظ');
+      showToast.error(t('invoices.toastUnexpectedError'));
     } finally {
       setIsLoading(false);
     }
@@ -125,12 +128,12 @@ const InvoiceHistory: React.FC = () => {
         showToast.error(response.error.message);
       }
     } catch (error) {
-      showToast.error('فشل في تحميل الفواتير');
+      showToast.error(t('invoices.toastLoadFailed'));
       console.error('Error loading invoices:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [salesService]);
+  }, [salesService, t]);
 
   useEffect(() => {
     loadInvoices();
@@ -146,10 +149,10 @@ const InvoiceHistory: React.FC = () => {
   };
 
   const getPricingTypeName = useCallback((type: string) => {
-    if (type === 'wholesale') return settings?.pricingOpts?.tier2Name || 'جملة';
-    if (type === 'retail') return settings?.pricingOpts?.tier1Name || 'قطاعي';
-    return settings?.pricingOpts?.customTiers?.find(t => t.id === type)?.name || 'مخصص';
-  }, [settings]);
+    if (type === 'wholesale') return settings?.pricingOpts?.tier2Name || t('pos.tier2Default');
+    if (type === 'retail') return settings?.pricingOpts?.tier1Name || t('pos.tier1Default');
+    return settings?.pricingOpts?.customTiers?.find(t => t.id === type)?.name || t('pos.otherPrice');
+  }, [settings, t]);
 
   const filteredInvoices = useMemo(() => {
     let filtered = [...invoices];
@@ -187,7 +190,7 @@ const InvoiceHistory: React.FC = () => {
         showToast.error(response.error.message);
       }
     } catch (error) {
-      showToast.error('فشل في تحميل تفاصيل الفاتورة');
+      showToast.error(t('invoices.toastDetailFailed'));
     }
   };
 
@@ -202,7 +205,7 @@ const InvoiceHistory: React.FC = () => {
     try {
       const response = await salesService.refundInvoice(invoiceToRefund, refundType);
       if (response.success) {
-        showToast.success('تم استرجاع الفاتورة بنجاح');
+        showToast.success(t('invoices.toastRefundSuccess'));
         setIsRefundModalOpen(false);
         setInvoiceToRefund(null);
         handleCloseDetails();
@@ -211,13 +214,14 @@ const InvoiceHistory: React.FC = () => {
         showToast.error(response.error.message);
       }
     } catch (error) {
-      showToast.error('فشل في عملية الاسترجاع');
+      showToast.error(t('invoices.toastRefundFailed'));
     }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ar-EG', {
+    const locale = i18n.language === 'ar' ? 'ar-EG' : i18n.language === 'fa' ? 'fa-IR' : i18n.language;
+    return date.toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -229,44 +233,44 @@ const InvoiceHistory: React.FC = () => {
   const getStatusInfo = (status: string, refundType?: string) => {
     switch (status) {
       case 'completed':
-        return { label: 'مكتملة', color: 'bg-emerald-50 text-emerald-600 border-emerald-100', icon: CheckCircle2 };
+        return { label: t('invoices.completed'), color: 'bg-emerald-50 text-emerald-600 border-emerald-100', icon: CheckCircle2 };
       case 'voided':
-        return { label: 'ملغاة', color: 'bg-slate-50 text-slate-500 border-slate-200', icon: XCircle };
+        return { label: t('invoices.voided'), color: 'bg-slate-50 text-slate-500 border-slate-200', icon: XCircle };
       case 'refunded':
         return {
-          label: refundType === 'defective' ? 'مرتجعة (تالف)' : 'مرتجعة (سليم)',
+          label: refundType === 'defective' ? t('invoices.defective') : t('invoices.goodCondition'),
           color: 'bg-red-50 text-red-600 border-red-100',
           icon: RotateCcw
         };
       default:
-        return { label: 'مكتملة', color: 'bg-emerald-50 text-emerald-600 border-emerald-100', icon: CheckCircle2 };
+        return { label: t('invoices.completed'), color: 'bg-emerald-50 text-emerald-600 border-emerald-100', icon: CheckCircle2 };
     }
   };
 
   const getRefundTypeInfo = (type?: string) => {
     if (type === 'defective') {
-      return { label: 'معيب (لا يضاف للمخزون)', color: 'text-red-500 bg-red-50', icon: AlertTriangle };
+      return { label: t('invoices.defectiveDesc'), color: 'text-red-500 bg-red-50', icon: AlertTriangle };
     }
-    return { label: 'حالة جيدة (تمت الإضافة للمخزون)', color: 'text-emerald-500 bg-emerald-50', icon: Archive };
+    return { label: t('invoices.goodConditionDesc'), color: 'text-emerald-500 bg-emerald-50', icon: Archive };
   };
 
   const handleExport = async () => {
     if (filteredInvoices.length === 0) {
-      showToast.error('لا توجد بيانات لتصديرها');
+      showToast.error(t('invoices.toastExportFailed'));
       return;
     }
 
     const formattedData = ExportService.formatInvoicesForExport(filteredInvoices);
     const result = await ExportService.exportToExcel(
       formattedData,
-      `مبيعات_جو_كاشير_${new Date().toISOString().split('T')[0]}`,
-      'المبيعات'
+      `مبيعات_${new Date().toISOString().split('T')[0]}`,
+      t('dashboard.todaySales')
     );
 
     if (result.success) {
-      showToast.success('تم تصدير ملف الإكسيل بنجاح');
+      showToast.success(t('invoices.toastExportSuccess'));
     } else {
-      showToast.error('فشل تصدير الملف');
+      showToast.error(t('invoices.toastExportFailed'));
     }
   };
 
@@ -284,10 +288,10 @@ const InvoiceHistory: React.FC = () => {
         <div className="md:col-span-8 flex flex-col justify-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold w-fit mb-4">
             <Calendar size={14} />
-            <span>محفوظات العمليات</span>
+            <span>{t('invoices.badgeTitle')}</span>
           </div>
-          <h1 className="text-4xl font-black text-slate-900 mb-2">سجل الفواتير</h1>
-          <p className="text-slate-500 font-medium">عرض وإدارة جميع عمليات البيع السابقة والمرتجعات</p>
+          <h1 className="text-4xl font-black text-slate-900 mb-2">{t('invoices.pageTitle')}</h1>
+          <p className="text-slate-500 font-medium">{t('invoices.pageDesc')}</p>
         </div>
 
         <div className="md:col-span-4 grid grid-cols-2 gap-4">
@@ -299,7 +303,7 @@ const InvoiceHistory: React.FC = () => {
                 </div>
               </div>
               <div className="text-2xl font-black text-slate-900 leading-none mb-1">{invoices.length}</div>
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">إجمالي الفواتير</div>
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('invoices.totalInvoices')}</div>
             </CardContent>
           </Card>
 
@@ -313,10 +317,10 @@ const InvoiceHistory: React.FC = () => {
               <div className="text-2xl font-black text-slate-900 leading-none mb-1">
                 {invoices
                   .filter(inv => inv.status === 'completed' || !inv.status)
-                  .reduce((sum, inv) => sum + inv.totalAmount, 0)
-                  .toLocaleString('ar-EG')}
+              .reduce((sum, inv) => sum + inv.totalAmount, 0)
+              .toLocaleString(i18n.language === 'ar' ? 'ar-EG' : i18n.language === 'fa' ? 'fa-IR' : i18n.language)}
               </div>
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">صافي المبيعات</div>
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('invoices.netSales')}</div>
             </CardContent>
           </Card>
         </div>
@@ -327,7 +331,7 @@ const InvoiceHistory: React.FC = () => {
         <div className="relative flex-1 w-full">
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
           <Input
-            placeholder="البحث برقم الفاتورة أو اسم العميل..."
+            placeholder={t('invoices.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pr-12 h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all text-sm font-medium"
@@ -342,9 +346,9 @@ const InvoiceHistory: React.FC = () => {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="all">كل الحالات</option>
-              <option value="completed">مكتملة</option>
-              <option value="refunded">مرتجعة</option>
+              <option value="all">{t('invoices.allStatuses')}</option>
+              <option value="completed">{t('invoices.completed')}</option>
+              <option value="refunded">{t('invoices.refunded')}</option>
             </select>
           </div>
 
@@ -352,7 +356,7 @@ const InvoiceHistory: React.FC = () => {
             variant="outline"
             onClick={handleExport}
             className="h-12 w-12 rounded-2xl border-slate-200 group bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all border-none"
-            title="تصدير إكسيل"
+            title="Export Excel"
           >
             <FileSpreadsheet size={20} />
           </Button>
@@ -377,13 +381,13 @@ const InvoiceHistory: React.FC = () => {
           <Table>
             <TableHeader className="bg-slate-50/50">
               <TableRow className="hover:bg-transparent border-slate-100">
-                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-slate-400 py-6 pr-8">رقم الفاتورة</TableHead>
-                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-slate-400 py-6">التاريخ والوقت</TableHead>
-                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-slate-400 py-6">العميل</TableHead>
-                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-slate-400 py-6">الأصناف</TableHead>
-                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-slate-400 py-6">الإجمالي</TableHead>
-                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-slate-400 py-6">الحالة</TableHead>
-                <TableHead className="text-center font-black uppercase tracking-wider text-[10px] text-slate-400 py-6">الإجراءات</TableHead>
+                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-slate-400 py-6 pr-8">{t('invoices.invoiceNumber')}</TableHead>
+                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-slate-400 py-6">{t('invoices.dateTime')}</TableHead>
+                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-slate-400 py-6">{t('invoices.customer')}</TableHead>
+                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-slate-400 py-6">{t('invoices.items')}</TableHead>
+                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-slate-400 py-6">{t('invoices.amount')}</TableHead>
+                <TableHead className="text-right font-black uppercase tracking-wider text-[10px] text-slate-400 py-6">{t('invoices.status')}</TableHead>
+                <TableHead className="text-center font-black uppercase tracking-wider text-[10px] text-slate-400 py-6">{t('invoices.details')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -398,7 +402,7 @@ const InvoiceHistory: React.FC = () => {
                   <TableCell colSpan={7} className="h-64 text-center">
                     <div className="flex flex-col items-center justify-center gap-4 text-slate-300">
                       <FileText size={48} strokeWidth={1} />
-                      <p className="font-bold">لا يوجد فواتير مطابقة للبحث</p>
+                      <p className="font-bold">{t('invoices.noResults')}</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -421,7 +425,7 @@ const InvoiceHistory: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <User size={14} className="text-slate-300" />
                           <span className={cn("font-bold", !invoice.customerName && "text-slate-400 italic font-normal")}>
-                            {invoice.customerName || "عميل نقدي"}
+                            {invoice.customerName || t('invoices.cashCustomer')}
                           </span>
                         </div>
                       </TableCell>
@@ -433,7 +437,7 @@ const InvoiceHistory: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <div className="font-black text-slate-900 whitespace-nowrap">
-                          {invoice.totalAmount.toLocaleString('ar-EG', { minimumFractionDigits: 2 })} <span className="text-[10px] text-slate-400 uppercase">ج.م</span>
+                          {(invoice.totalAmount || 0).toLocaleString(i18n.language === 'ar' ? 'ar-EG' : i18n.language === 'fa' ? 'fa-IR' : i18n.language, { minimumFractionDigits: 2 })} <span className="text-[10px] text-slate-400 uppercase">{t('pos.currencySymbol')}</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -450,7 +454,7 @@ const InvoiceHistory: React.FC = () => {
                           className="h-9 px-4 rounded-xl hover:bg-slate-100 hover:text-slate-900 font-bold gap-2"
                         >
                           <Eye size={16} />
-                          التفاصيل
+                          {t('invoices.details')}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -465,7 +469,7 @@ const InvoiceHistory: React.FC = () => {
         {totalPages > 1 && (
           <div className="p-6 border-t border-slate-100 flex items-center justify-between bg-white">
             <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-              عرض <span className="text-slate-900">{paginatedInvoices.length}</span> من <span className="text-slate-900">{filteredInvoices.length}</span> فاتورة
+              {t('common.pageInfo', { current: currentPage, total: filteredInvoices.length })}
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -476,7 +480,7 @@ const InvoiceHistory: React.FC = () => {
                 className="h-10 px-4 rounded-xl border-slate-200"
               >
                 <ChevronRight size={18} className="ml-1" />
-                السابق
+                {t('common.previous')}
               </Button>
               <div className="flex items-center gap-1">
                 {[...Array(totalPages)].map((_, i) => (
@@ -499,7 +503,7 @@ const InvoiceHistory: React.FC = () => {
                 disabled={currentPage === totalPages}
                 className="h-10 px-4 rounded-xl border-slate-200"
               >
-                التالي
+                {t('common.next')}
                 <ChevronLeft size={18} className="mr-1" />
               </Button>
             </div>
@@ -518,7 +522,7 @@ const InvoiceHistory: React.FC = () => {
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <Receipt size={24} className="text-slate-400" />
-                      <span className="text-xs uppercase font-black tracking-widest text-slate-400">فاتورة بيع</span>
+                      <span className="text-xs uppercase font-black tracking-widest text-slate-400">{t('invoices.saleInvoice')}</span>
                     </div>
                     <h2 className="text-3xl font-black mb-1">#{selectedInvoice.invoiceNumber}</h2>
                     <p className="text-slate-400 text-sm font-medium opacity-80">{formatDate(selectedInvoice.createdAt)}</p>
@@ -543,14 +547,14 @@ const InvoiceHistory: React.FC = () => {
                 {/* Customer & Info Grid */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                    <div className="text-[10px] uppercase font-black text-slate-400 mb-2">العميل</div>
+                    <div className="text-[10px] uppercase font-black text-slate-400 mb-2">{t('invoices.customerLabel')}</div>
                     <div className="font-bold text-slate-900 flex items-center gap-2">
                       <User size={16} className="text-slate-400" />
-                      {selectedInvoice.customerName || "عميل نقدي"}
+                      {selectedInvoice.customerName || t('invoices.cashCustomer')}
                     </div>
                   </div>
                   <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                    <div className="text-[10px] uppercase font-black text-slate-400 mb-2">نوع التسعير</div>
+                    <div className="text-[10px] uppercase font-black text-slate-400 mb-2">{t('invoices.pricingType')}</div>
                     <div className="font-bold text-slate-900">
                       {getPricingTypeName(selectedInvoice.pricingType)}
                     </div>
@@ -560,16 +564,16 @@ const InvoiceHistory: React.FC = () => {
                 {/* Items List */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider">المنتجات المباعة</h4>
-                    <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{selectedInvoice.items.length} صنف</span>
+                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider">{t('invoices.productsSold')}</h4>
+                    <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{selectedInvoice.items.length} {t('invoices.items')}</span>
                   </div>
                   <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
-                          <TableHead className="text-right text-[10px] font-black uppercase text-slate-400 py-3">المنتج</TableHead>
-                          <TableHead className="text-center text-[10px] font-black uppercase text-slate-400 py-3">الكمية</TableHead>
-                          <TableHead className="text-left text-[10px] font-black uppercase text-slate-400 py-3 pr-4">الإجمالي</TableHead>
+                          <TableHead className="text-right text-[10px] font-black uppercase text-slate-400 py-3">{t('datagrid.productName', 'Product')}</TableHead>
+                          <TableHead className="text-center text-[10px] font-black uppercase text-slate-400 py-3">{t('datagrid.qty', 'Qty')}</TableHead>
+                          <TableHead className="text-left text-[10px] font-black uppercase text-slate-400 py-3 pr-4">{t('invoices.totalValue')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -588,24 +592,24 @@ const InvoiceHistory: React.FC = () => {
                 {/* Summary Card */}
                 <div className="bg-slate-900 rounded-[24px] p-6 text-white space-y-4">
                   <div className="flex justify-between items-center text-slate-400 text-xs font-bold uppercase tracking-widest">
-                    <span>إجمالي الفاتورة</span>
-                    <span className="text-white bg-white/10 px-3 py-1 rounded-full">{selectedInvoice.items.length} قطع</span>
+                    <span>{t('invoices.invoiceTotal')}</span>
+                    <span className="text-white bg-white/10 px-3 py-1 rounded-full">{selectedInvoice.items.length} {t('invoices.items')}</span>
                   </div>
                   <div className="flex justify-between items-baseline pt-2 border-t border-white/10">
-                    <span className="text-lg font-bold text-slate-300">القيمة الإجمالية</span>
+                    <span className="text-lg font-bold text-slate-300">{t('invoices.totalValue')}</span>
                     <div className="flex items-baseline gap-2">
                       <span className="text-3xl font-black tracking-tight">{selectedInvoice.totalAmount.toFixed(2)}</span>
-                      <span className="text-xs font-bold text-slate-400 uppercase">ج.م</span>
+                      <span className="text-xs font-bold text-slate-400 uppercase">{t('pos.currencySymbol')}</span>
                     </div>
                   </div>
 
                   {selectedInvoice.status === 'refunded' && (
                     <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
-                      <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">حالة المرتجع</span>
+                      <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">{t('invoices.refundStatus')}</span>
                       <div className={cn("flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black",
                         selectedInvoice.refundType === 'defective' ? "bg-red-500/20 text-red-400" : "bg-emerald-500/20 text-emerald-400")}>
                         {selectedInvoice.refundType === 'defective' ? <AlertTriangle size={12} /> : <Archive size={12} />}
-                        {selectedInvoice.refundType === 'defective' ? 'منتج معيب (لم يتم استرجاع المخزون)' : 'حالة جيدة (تم استرجاع المخزون)'}
+                        {selectedInvoice.refundType === 'defective' ? t('invoices.defectiveDesc') : t('invoices.goodConditionDesc')}
                       </div>
                     </div>
                   )}
@@ -623,7 +627,7 @@ const InvoiceHistory: React.FC = () => {
                     }}
                   >
                     <RotateCcw size={18} />
-                    استرجاع الفاتورة
+                    {t('invoices.refundInvoice')}
                   </Button>
                 )}
                 <Button
@@ -631,7 +635,7 @@ const InvoiceHistory: React.FC = () => {
                   className="flex-1 h-12 rounded-xl border-slate-200 font-bold hover:bg-slate-100"
                   onClick={handleCloseDetails}
                 >
-                  إغلاق
+                  {t('invoices.close')}
                 </Button>
                 {settings && (
                   <Button
@@ -639,7 +643,7 @@ const InvoiceHistory: React.FC = () => {
                     className="flex-1 h-12 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 font-bold gap-2"
                   >
                     <FileText size={18} />
-                    حفظ كـ PDF
+                    {t('invoices.savePDF')}
                   </Button>
                 )}
               </div>
@@ -656,8 +660,8 @@ const InvoiceHistory: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-2xl font-black text-slate-900">استرجاع الفاتورة</h3>
-              <p className="text-slate-500 font-medium">يرجى تحديد حالة المنتجات المسترجعة لتحديث المخزون بشكل صحيح</p>
+              <h3 className="text-2xl font-black text-slate-900">{t('invoices.confirmRefund')}</h3>
+              <p className="text-slate-500 font-medium">{t('invoices.confirmRefundDesc')}</p>
             </div>
 
             <div className="grid grid-cols-1 gap-3 pt-4">
@@ -667,9 +671,9 @@ const InvoiceHistory: React.FC = () => {
               >
                 <div className="flex items-center gap-2 font-black text-lg">
                   <Archive size={20} className="group-hover:scale-110 transition-transform" />
-                  حالة جيدة
+                  {t('invoices.goodConditionOption')}
                 </div>
-                <span className="text-[10px] opacity-80 font-bold uppercase tracking-tight">إرجاع المنتجات للمخزون مبيعة مرة أخرى</span>
+                <span className="text-[10px] opacity-80 font-bold uppercase tracking-tight">{t('invoices.goodConditionOptionDesc')}</span>
               </Button>
 
               <Button
@@ -678,9 +682,9 @@ const InvoiceHistory: React.FC = () => {
               >
                 <div className="flex items-center gap-2 font-black text-lg">
                   <AlertTriangle size={20} className="group-hover:scale-110 transition-transform" />
-                  منتج معيب / تالف
+                  {t('invoices.defectiveOption')}
                 </div>
-                <span className="text-[10px] opacity-80 font-bold uppercase tracking-tight">عدم إضافة المنتجات للمخزون (هالك)</span>
+                <span className="text-[10px] opacity-80 font-bold uppercase tracking-tight">{t('invoices.defectiveOptionDesc')}</span>
               </Button>
             </div>
 
@@ -689,7 +693,7 @@ const InvoiceHistory: React.FC = () => {
               onClick={() => setIsRefundModalOpen(false)}
               className="w-full h-12 rounded-xl text-slate-400 font-bold hover:bg-slate-50"
             >
-              إلغاء العملية
+              {t('invoices.cancelRefund')}
             </Button>
           </div>
         </DialogContent>

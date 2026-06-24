@@ -124,7 +124,6 @@
     ],
     "asar": true,
     "win": {
-      "artifactName": "JoeCashier-Setup-${version}.${ext}",
       "sign": false,
       "forceCodeSigning": false,
       "signAndEditExecutable": false,
@@ -144,11 +143,15 @@
       ]
     },
     "nsis": {
+      "artifactName": "JoeCashier-Setup-${version}.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "نظام الكاشير"
+    },
+    "portable": {
+      "artifactName": "JoeCashier-Portable-${version}.${ext}"
     },
     "linux": {
       "target": [

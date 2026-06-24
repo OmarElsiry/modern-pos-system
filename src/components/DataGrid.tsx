@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import './DataGrid.css';
 import Button from './Button'; // Default import
 import Skeleton from './Skeleton';
@@ -28,8 +29,9 @@ const DataGrid = <T extends { id?: string | number } & Record<string, any>>({
     pageSize = 10,
     className = '',
     onRowClick,
-    emptyMessage = 'لا توجد بيانات',
+    emptyMessage: customEmptyMessage,
 }: DataGridProps<T>) => {
+    const { t } = useTranslation();
     const [currentPage, setCurrentPage] = useState(1);
     const [sortField, setSortField] = useState<keyof T | null>(null);
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -146,7 +148,7 @@ const DataGrid = <T extends { id?: string | number } & Record<string, any>>({
                         ) : (
                             <tr>
                                 <td colSpan={columns.length} className="datagrid-empty">
-                                    {emptyMessage}
+                                    {customEmptyMessage || t('common.noData')}
                                 </td>
                             </tr>
                         )}
@@ -162,10 +164,10 @@ const DataGrid = <T extends { id?: string | number } & Record<string, any>>({
                         disabled={currentPage === 1}
                         onClick={() => handlePageChange(currentPage - 1)}
                     >
-                        السابق
+                        {t('common.previous')}
                     </Button>
                     <span className="page-info">
-                        صفحة {currentPage} من {totalPages}
+                        {t('common.pageInfo', { current: currentPage, total: totalPages })}
                     </span>
                     <Button
                         size="sm"
@@ -173,7 +175,7 @@ const DataGrid = <T extends { id?: string | number } & Record<string, any>>({
                         disabled={currentPage === totalPages}
                         onClick={() => handlePageChange(currentPage + 1)}
                     >
-                        التالي
+                        {t('common.next')}
                     </Button>
                 </div>
             )}

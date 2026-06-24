@@ -40,6 +40,8 @@ i18n
         fallbackLng: 'en', // Default to English if language not found
         interpolation: {
             escapeValue: false, // react already safes from xss
+            prefix: '{',
+            suffix: '}',
         },
         detection: {
             order: ['localStorage', 'navigator'],

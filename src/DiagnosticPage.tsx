@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const DiagnosticPage: React.FC = () => {
   const [diagnostics, setDiagnostics] = useState<any>({});
+  const { t } = useTranslation();
 
   useEffect(() => {
     const runDiagnostics = async () => {
@@ -46,7 +48,7 @@ const DiagnosticPage: React.FC = () => {
       fontFamily: 'monospace'
     }}>
       <h1 style={{ marginBottom: '1.875rem', color: '#1976d2' }}>
-        🔍 System Diagnostics
+        🔍 {t('DiagnosticPage.title')}
       </h1>
 
       <div style={{
@@ -55,7 +57,7 @@ const DiagnosticPage: React.FC = () => {
         borderRadius: '0.5rem',
         marginBottom: '1.25rem'
       }}>
-        <h2 style={{ marginBottom: '0.9375rem' }}>Environment Information</h2>
+        <h2 style={{ marginBottom: '0.9375rem' }}>{t('DiagnosticPage.environment')}</h2>
         <pre style={{ fontSize: '0.875rem', lineHeight: '1.6' }}>
           {JSON.stringify(diagnostics, null, 2)}
         </pre>
@@ -69,7 +71,7 @@ const DiagnosticPage: React.FC = () => {
           border: '0.125rem solid #d32f2f'
         }}>
           <h2 style={{ color: '#d32f2f', marginBottom: '0.9375rem' }}>
-            ⚠️ Error Detected
+            ⚠️ {t('DiagnosticPage.errorDetected')}
           </h2>
           <pre style={{
             fontSize: '0.75rem',
@@ -96,7 +98,7 @@ const DiagnosticPage: React.FC = () => {
             marginRight: '0.625rem'
           }}
         >
-          🔄 Reload
+          🔄 {t('DiagnosticPage.reload')}
         </button>
         <button
           onClick={() => window.location.href = '/'}
@@ -110,7 +112,7 @@ const DiagnosticPage: React.FC = () => {
             cursor: 'pointer'
           }}
         >
-          🏠 Go to App
+          🏠 {t('DiagnosticPage.goToApp')}
         </button>
       </div>
     </div>

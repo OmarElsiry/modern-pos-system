@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Invoice, InvoiceItem } from '../../types/models';
 import './ReceiptTemplate.css';
 
@@ -10,7 +11,8 @@ interface ReceiptTemplateProps {
 }
 
 export const ReceiptTemplate = forwardRef<HTMLDivElement, ReceiptTemplateProps>(
-    ({ invoice, storeName = 'بيت ورد', storeAddress = '123 Main St, Cairo', storePhone = '01000000000' }, ref) => {
+    ({ invoice, storeName, storeAddress, storePhone }, ref) => {
+        const { t } = useTranslation();
         const [settings, setSettings] = useState<{ name: string; address?: string; phone?: string } | null>(null);
 
         useEffect(() => {
@@ -23,29 +25,29 @@ export const ReceiptTemplate = forwardRef<HTMLDivElement, ReceiptTemplateProps>(
             loadSettings();
         }, []);
 
-        const name = settings?.name || storeName;
-        const address = settings?.address || storeAddress;
-        const phone = settings?.phone || storePhone;
+        const name = settings?.name || storeName || t('layout.sidebarTitle');
+        const address = settings?.address || storeAddress || '';
+        const phone = settings?.phone || storePhone || '';
 
         return (
             <div ref={ref} className="receipt-container" dir="rtl">
                 <div className="receipt-header">
                     <h2 className="receipt-store-name">{name}</h2>
-                    <p>{address}</p>
-                    <p>هاتف: {phone}</p>
+                    {address && <p>{address}</p>}
+                    {phone && <p>{t('layout.sidebarTitle')}: {phone}</p>}
                     <div className="divider"></div>
-                    <p>رقم الفاتورة: {invoice.invoiceNumber}</p>
-                    <p>التاريخ: {new Date(invoice.createdAt).toLocaleString('ar-EG')}</p>
+                    <p>{t('invoices.invoiceNumber')}: {invoice.invoiceNumber}</p>
+                    <p>{t('invoices.dateTime')}: {new Date(invoice.createdAt).toLocaleDateString()}</p>
                 </div>
 
                 <div className="receipt-body">
                     <table className="receipt-table">
                         <thead>
                             <tr>
-                                <th>Item</th>
-                                <th>Qty</th>
-                                <th>Price</th>
-                                <th>Total</th>
+                                <th>{t('receiptPreview.item')}</th>
+                                <th>{t('receiptPreview.quantity')}</th>
+                                <th>{t('receiptPreview.price')}</th>
+                                <th>{t('receiptPreview.total')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -64,14 +66,14 @@ export const ReceiptTemplate = forwardRef<HTMLDivElement, ReceiptTemplateProps>(
 
                 <div className="receipt-footer">
                     <div className="total-row">
-                        <span>الإجمالي:</span>
-                        <span>{invoice.totalAmount.toFixed(2)} ج.م</span>
+                        <span>{t('receiptPreview.grandTotal')}:</span>
+                        <span>{invoice.totalAmount.toFixed(2)} {t('common.currencySymbol')}</span>
                     </div>
                     {invoice.customerName && (
-                        <p>العميل: {invoice.customerName}</p>
+                        <p>{t('invoices.customerLabel')}: {invoice.customerName}</p>
                     )}
                     <div className="divider"></div>
-                    <p className="thank-you">شكراً لزيارتكم!</p>
+                    <p className="thank-you">{t('settings.thankYouNotePlaceholder')}</p>
                     <p className="barcode">*{invoice.invoiceNumber}*</p>
                 </div>
             </div>

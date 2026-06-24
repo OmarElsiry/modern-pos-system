@@ -20,6 +20,7 @@ import Onboarding from './Onboarding';
 import { useStockAlerts } from '../hooks/useStockAlerts';
 import { StockAlertBadge, StockAlert } from './StockAlert';
 import { CommandPalette } from './CommandPalette';
+import { useTranslation } from 'react-i18next';
 import './Layout.css';
 
 interface LayoutProps {
@@ -33,6 +34,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [showStockAlerts, setShowStockAlerts] = useState(false);
   const location = useLocation();
   const stockAlerts = useStockAlerts();
+  const { t } = useTranslation();
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -63,15 +65,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   };
 
+  const navKeyMap: Record<string, string> = { navPos: 'pos', dashboard: 'dashboard', products: 'products', categories: 'categories', customers: 'customers', invoices: 'invoices', reports: 'reports', settings: 'settings' };
+
   const navItems = [
-    { to: '/pos', icon: <ShoppingCart size={20} />, label: 'نقطة البيع' },
-    { to: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'لوحة التحكم' },
-    { to: '/products', icon: <Package size={20} />, label: 'المنتجات' },
-    { to: '/categories', icon: <Layers size={20} />, label: 'الأقسام' },
-    { to: '/customers', icon: <Users size={20} />, label: 'العملاء' },
-    { to: '/invoices', icon: <History size={20} />, label: 'سجل الفواتير' },
-    { to: '/reports', icon: <BarChart3 size={20} />, label: 'التقارير' },
-    { to: '/settings', icon: <Settings size={20} />, label: 'الإعدادات' },
+    { to: '/pos', icon: <ShoppingCart size={20} />, label: 'navPos' },
+    { to: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'dashboard' },
+    { to: '/products', icon: <Package size={20} />, label: 'products' },
+    { to: '/categories', icon: <Layers size={20} />, label: 'categories' },
+    { to: '/customers', icon: <Users size={20} />, label: 'customers' },
+    { to: '/invoices', icon: <History size={20} />, label: 'invoices' },
+    { to: '/reports', icon: <BarChart3 size={20} />, label: 'reports' },
+    { to: '/settings', icon: <Settings size={20} />, label: 'settings' },
   ];
 
   return (
@@ -80,7 +84,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <button
         className="mobile-menu-toggle"
         onClick={toggleMobileMenu}
-        aria-label="فتح القائمة"
+        aria-label={t('layout.openMenu')}
         aria-expanded={isMobileMenuOpen}
       >
         <Menu size={24} />
@@ -97,24 +101,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-header">
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <h1 className={`sidebar-title ${isCollapsed ? 'hidden-labels' : ''}`}>بيت ورد</h1>
-              {!isCollapsed && (
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col">
+            <h1 className={`sidebar-title ${isCollapsed ? 'hidden-labels' : ''}`}>{t('layout.sidebarTitle')}</h1>
+            {!isCollapsed && (
                 <button
                   onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
                   className="text-[10px] text-zinc-500 bg-zinc-800/50 px-2 py-0.5 rounded border border-zinc-700/50 mt-1 self-start hover:bg-zinc-800 hover:text-zinc-300 transition-colors cursor-pointer"
                 >
-                  Ctrl+K للأوامر
+                  {t('layout.shortcutHint')}
                 </button>
               )}
-            </div>
           </div>
+        </div>
           {/* Desktop collapse button */}
           <button
             onClick={toggleSidebar}
             className="sidebar-toggle desktop-only"
-            aria-label={isCollapsed ? 'توسيع القائمة' : 'طي القائمة'}
+            aria-label={isCollapsed ? t('layout.expandMenu') : t('layout.collapseMenu')}
           >
             {isCollapsed ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
           </button>
@@ -122,8 +126,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="sidebar-toggle mobile-only"
-            aria-label="إغلاق القائمة"
-            title="إغلاق القائمة"
+            aria-label={t('layout.closeMenu')}
+            title={t('layout.closeMenu')}
           >
             <X size={20} />
           </button>
@@ -137,7 +141,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               className={({ isActive }) => `nav-item ${isActive ? 'nav-item-active' : ''}`}
             >
               <span className="nav-icon">{item.icon}</span>
-              {!isCollapsed && <span className="nav-label">{item.label}</span>}
+              {!isCollapsed && <span className="nav-label">{t('nav.' + (navKeyMap[item.label] || item.label), item.label)}</span>}
             </NavLink>
           ))}
         </nav>
@@ -155,7 +159,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           <button className="nav-item" onClick={handleToggleKiosk}>
             <span className="nav-icon">{isKiosk ? <Minimize size={20} /> : <Maximize size={20} />}</span>
-            {!isCollapsed && <span className="nav-label">{isKiosk ? 'إخراج من ملء الشاشة' : 'وضع ملء الشاشة'}</span>}
+            {!isCollapsed && <span className="nav-label">{isKiosk ? t('layout.exitKioskMode') : t('layout.kioskMode')}</span>}
           </button>
         </div>
       </aside>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Customer } from '../types/models';
 import { CustomerService } from '../services/CustomerService';
 import Modal from './Modal';
@@ -17,6 +18,7 @@ export const CustomerSelect: React.FC<CustomerSelectProps> = ({
   selectedCustomerId,
   onSelect,
 }) => {
+  const { t } = useTranslation();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -98,14 +100,14 @@ export const CustomerSelect: React.FC<CustomerSelectProps> = ({
 
   const handleSaveNewCustomer = async () => {
     if (!newCustomerData.name.trim()) {
-      setAddError('اسم العميل مطلوب');
+      setAddError(t('customerSelect.nameRequired'));
       return;
     }
 
     if (newCustomerData.phone) {
       const exists = customers.find(c => c.phone === newCustomerData.phone);
       if (exists) {
-        setAddError('رقم الهاتف موجود بالفعل لعميل آخر: ' + exists.name);
+        setAddError(t('customerSelect.phoneExists', { name: exists.name }));
         return;
       }
     }
@@ -122,13 +124,13 @@ export const CustomerSelect: React.FC<CustomerSelectProps> = ({
       setNewCustomerData({ name: '', phone: '' });
       setIsAddModalOpen(false);
     } else {
-      setAddError(response.error?.message || 'فشل في إضافة العميل');
+      setAddError(response.error?.message || t('customerSelect.addFailed'));
     }
   };
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
-      <Label className="text-xs text-muted-foreground mb-1.5 block">العميل</Label>
+      <Label className="text-xs text-muted-foreground mb-1.5 block">{t('customerSelect.customer')}</Label>
       <div className="relative">
         <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
@@ -137,7 +139,7 @@ export const CustomerSelect: React.FC<CustomerSelectProps> = ({
             "pr-9",
             selectedCustomer && "border-primary/50"
           )}
-          placeholder="ابحث باسم العميل أو رقم الهاتف..."
+          placeholder={t('customerSelect.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
@@ -196,13 +198,13 @@ export const CustomerSelect: React.FC<CustomerSelectProps> = ({
               onClick={handleAddNewClick}
             >
               <Plus className="h-4 w-4" />
-              <span>إضافة عميل جديد: <strong>{searchTerm}</strong></span>
+              <span>{t('customerSelect.addNew', { name: searchTerm })}</span>
             </div>
           )}
 
           {filteredCustomers.length === 0 && !searchTerm && (
             <div className="p-4 text-center text-muted-foreground text-sm">
-              ابدأ بكتابة اسم العميل...
+              {t('customerSelect.startTyping')}
             </div>
           )}
         </div>
@@ -211,11 +213,11 @@ export const CustomerSelect: React.FC<CustomerSelectProps> = ({
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="إضافة عميل جديد"
+        title={t('customerSelect.addTitle')}
         footer={
           <div className="flex gap-2 justify-end">
-            <Button onClick={() => setIsAddModalOpen(false)} variant="outline">إلغاء</Button>
-            <Button onClick={handleSaveNewCustomer} variant="solid">حفظ</Button>
+            <Button onClick={() => setIsAddModalOpen(false)} variant="outline">{t('customerSelect.cancel')}</Button>
+            <Button onClick={handleSaveNewCustomer} variant="solid">{t('customerSelect.save')}</Button>
           </div>
         }
       >
@@ -228,11 +230,11 @@ export const CustomerSelect: React.FC<CustomerSelectProps> = ({
 
           <div className="space-y-2">
             <Label>
-              اسم العميل <span className="text-destructive">*</span>
+              {t('customerSelect.nameLabel')} <span className="text-destructive">*</span>
             </Label>
             <Input
               type="text"
-              placeholder="اسم العميل"
+              placeholder={t('customerSelect.namePlaceholder')}
               value={newCustomerData.name}
               onChange={(e) => setNewCustomerData({ ...newCustomerData, name: e.target.value })}
               autoFocus
@@ -240,10 +242,10 @@ export const CustomerSelect: React.FC<CustomerSelectProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label>رقم الهاتف</Label>
+            <Label>{t('customerSelect.phoneLabel')}</Label>
             <Input
               type="text"
-              placeholder="رقم الهاتف (اختياري)"
+              placeholder={t('customerSelect.phonePlaceholder')}
               value={newCustomerData.phone}
               onChange={(e) => setNewCustomerData({ ...newCustomerData, phone: e.target.value })}
               onKeyDown={e => {

@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Product } from '../types/models';
 import './SearchBar.css';
 
@@ -27,10 +28,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onSelectProduct,
   onEnter,
   showSuccess,
-  placeholder = 'ابحث بالاسم، الكود، أو امسح الباركود...',
+  placeholder: placeholderProp,
   label,
   autoFocus,
 }) => {
+  const { t } = useTranslation();
+  const placeholder = placeholderProp ?? t('pos.searchPlaceholder');
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [successVisible, setSuccessVisible] = React.useState(false);
@@ -171,10 +174,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               </div>
               <div className="result-info">
                 <div className="result-price">
-                  {product.retailPrice.toFixed(2)} ج.م
+                  {product.retailPrice.toFixed(2)} {t('pos.currencySymbol')}
                 </div>
                 <div className={`result-stock ${product.stockQuantity === 0 ? 'out-of-stock' : ''}`}>
-                  {product.stockQuantity === 0 ? 'نفذ' : `${product.stockQuantity} متاح`}
+                  {product.stockQuantity === 0 ? t('stockAlert.outOfStock') : `${product.stockQuantity} ${t('stockAlert.available')}`}
                 </div>
               </div>
             </div>
@@ -191,7 +194,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
             </span>
-            <p>لا توجد نتائج لـ "{query}"</p>
+            <p>{t('common.noData')}</p>
           </div>
         </div>
       )}

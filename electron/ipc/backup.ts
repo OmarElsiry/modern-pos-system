@@ -1,12 +1,13 @@
-import { ipcMain } from 'electron';
+import { ipcMain, app } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import { IpcChannels } from './types';
 import { getDatabase, closeDatabase, initializeDatabase } from '../../src/database/connection';
 
 export function setupBackupHandlers() {
-    const dbPath = path.join(process.cwd(), 'pos-database.db');
-    const backupDir = path.join(process.cwd(), 'backups');
+    const productionPath = path.join(app.getPath('userData'), 'pos-database.db');
+    const dbPath = fs.existsSync(productionPath) ? productionPath : path.join(process.execPath, '..', 'pos-database.db');
+    const backupDir = path.join(path.dirname(dbPath), 'backups');
 
     if (!fs.existsSync(backupDir)) {
         fs.mkdirSync(backupDir, { recursive: true });

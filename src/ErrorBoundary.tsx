@@ -1,7 +1,9 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import { withTranslation } from 'react-i18next';
 
 interface Props {
   children: ReactNode;
+  t: (key: string) => string;
 }
 
 interface State {
@@ -31,6 +33,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      const { t } = this.props;
       return (
         <div style={{
           padding: '2.5rem',
@@ -39,7 +42,7 @@ class ErrorBoundary extends Component<Props, State> {
           fontFamily: 'Arial, sans-serif'
         }}>
           <h1 style={{ color: '#d32f2f', marginBottom: '1.25rem' }}>
-            ⚠️ خطأ في التطبيق / Application Error
+            ⚠️ {t('ErrorBoundary.title')}
           </h1>
           <div style={{
             background: '#ffebee',
@@ -48,7 +51,7 @@ class ErrorBoundary extends Component<Props, State> {
             marginBottom: '1.25rem',
             border: '0.125rem solid #d32f2f'
           }}>
-            <h2 style={{ marginBottom: '0.625rem' }}>Error Message:</h2>
+            <h2 style={{ marginBottom: '0.625rem' }}>{t('ErrorBoundary.errorMessage')}</h2>
             <pre style={{
               background: 'white',
               padding: '0.9375rem',
@@ -66,7 +69,7 @@ class ErrorBoundary extends Component<Props, State> {
               borderRadius: '0.5rem',
               marginBottom: '1.25rem'
             }}>
-              <h2 style={{ marginBottom: '0.625rem' }}>Stack Trace:</h2>
+              <h2 style={{ marginBottom: '0.625rem' }}>{t('ErrorBoundary.stackTrace')}</h2>
               <pre style={{
                 background: 'white',
                 padding: '0.9375rem',
@@ -91,7 +94,7 @@ class ErrorBoundary extends Component<Props, State> {
               cursor: 'pointer'
             }}
           >
-            🔄 إعادة تحميل التطبيق / Reload Application
+            🔄 {t('ErrorBoundary.reload')}
           </button>
         </div>
       );
@@ -101,4 +104,4 @@ class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-export default ErrorBoundary;
+export default withTranslation()(ErrorBoundary);

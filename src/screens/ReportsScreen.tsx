@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ReportService,
   SalesReport,
@@ -21,18 +22,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-// Lazy load charts to improve initial load time
 const ReportBarChart = React.lazy(() => import('../components/charts/ReportCharts').then(m => ({ default: m.ReportBarChart })));
 const ReportLineChart = React.lazy(() => import('../components/charts/ReportCharts').then(m => ({ default: m.ReportLineChart })));
 const ReportPieChart = React.lazy(() => import('../components/charts/ReportCharts').then(m => ({ default: m.ReportPieChart })));
-
-// Loading component for charts
-const ChartLoader = () => (
-  <div className="flex flex-col items-center justify-center h-full min-h-[300px] bg-surface-muted/50 rounded-3xl border border-dashed border-border animate-pulse">
-    <div className="rounded-full h-10 w-10 border-b-2 border-primary animate-spin mb-4"></div>
-    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">جاري تحميل البيانات...</span>
-  </div>
-);
 
 type ReportPeriod = 'today' | 'week' | 'month' | 'custom';
 
@@ -41,6 +33,14 @@ interface ReportsScreenProps {
 }
 
 const ReportsScreen: React.FC<ReportsScreenProps> = () => {
+  const { t } = useTranslation();
+
+  const ChartLoader = () => (
+    <div className="flex flex-col items-center justify-center h-full min-h-[300px] bg-surface-muted/50 rounded-3xl border border-dashed border-border animate-pulse">
+      <div className="rounded-full h-10 w-10 border-b-2 border-primary animate-spin mb-4"></div>
+      <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('reports.loading')}</span>
+    </div>
+  );
   const [period, setPeriod] = useState<ReportPeriod>('today');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -130,10 +130,10 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold w-fit mb-4">
             <TrendingUp size={14} />
-            <span>نظرة عامة على الأداء</span>
+            <span>{t('reports.overview')}</span>
           </div>
-          <h1 className="text-4xl font-black text-foreground mb-2">التقارير والإحصائيات</h1>
-          <p className="text-muted-foreground font-medium">تحليل المبيعات، أفضل المنتجات، وتوزيع الفئات</p>
+          <h1 className="text-4xl font-black text-foreground mb-2">{t('reports.pageTitle')}</h1>
+          <p className="text-muted-foreground font-medium">{t('reports.pageDesc')}</p>
         </div>
         <Button
           onClick={loadReport}
@@ -142,7 +142,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
           className="h-12 px-6 rounded-2xl border-border bg-surface-bg font-bold gap-2 transition-all hover:bg-surface-muted"
         >
           <RefreshCcw size={18} className={loading ? "animate-spin" : ""} />
-          تحديث البيانات
+          {t('reports.updateData')}
         </Button>
       </div>
 
@@ -150,10 +150,10 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
       <div className="bg-surface-bg p-5 rounded-3xl border border-border shadow-sm flex flex-col md:flex-row gap-4 items-center">
         <div className="flex items-center gap-3 bg-surface-muted p-1 rounded-2xl w-full md:w-auto overflow-x-auto no-scrollbar">
           {[
-            { id: 'today', label: 'اليوم' },
-            { id: 'week', label: 'آخر 7 أيام' },
-            { id: 'month', label: 'آخر 30 يوم' },
-            { id: 'custom', label: 'فترة مخصصة' }
+            { id: 'today', label: t('reports.today') },
+            { id: 'week', label: t('reports.last7Days') },
+            { id: 'month', label: t('reports.last30Days') },
+            { id: 'custom', label: t('reports.customPeriod') }
           ].map((p) => (
             <button
               key={p.id}
@@ -179,7 +179,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
                 className="w-full pr-11 h-12 rounded-2xl border border-border bg-surface-muted focus:bg-surface-bg transition-all text-sm font-black text-foreground"
               />
             </div>
-            <span className="text-xs font-black text-muted-foreground">إلى</span>
+            <span className="text-xs font-black text-muted-foreground">{t('reports.to')}</span>
             <div className="relative flex-1">
               <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <input
@@ -189,7 +189,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
                 className="w-full pr-11 h-12 rounded-2xl border border-border bg-surface-muted focus:bg-surface-bg transition-all text-sm font-black text-foreground"
               />
             </div>
-            <Button onClick={loadReport} className="h-12 rounded-2xl px-6 font-black bg-primary">تطبيق</Button>
+            <Button onClick={loadReport} className="h-12 rounded-2xl px-6 font-black bg-primary">{t('reports.apply')}</Button>
           </div>
         )}
       </div>
@@ -214,8 +214,8 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
                       <DollarSign size={24} strokeWidth={3} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">إجمالي المبيعات</p>
-                      <h3 className="text-3xl font-black text-foreground">{salesSummary.totalSales.toFixed(0)} <span className="text-sm">ج.م</span></h3>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{t('reports.totalSales')}</p>
+                      <h3 className="text-3xl font-black text-foreground">{salesSummary.totalSales.toFixed(0)} <span className="text-sm">{t('common.currencySymbol')}</span></h3>
                     </div>
                   </div>
                 </CardContent>
@@ -229,8 +229,8 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
                       <FileText size={24} strokeWidth={3} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">عدد الفواتير</p>
-                      <h3 className="text-3xl font-black text-foreground">{salesSummary.totalInvoices} <span className="text-sm">فاتورة</span></h3>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{t('reports.invoicesCount')}</p>
+                      <h3 className="text-3xl font-black text-foreground">{salesSummary.totalInvoices} <span className="text-sm">{t('invoices.invoiceNumber')}</span></h3>
                     </div>
                   </div>
                 </CardContent>
@@ -245,7 +245,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
                       <Store size={24} strokeWidth={3} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">جملة / قطاعي</p>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{t('reports.wholesaleRetail')}</p>
                       <div className="flex items-center gap-2">
                         <span className="text-xl font-black text-foreground">{salesSummary.wholesaleSales.toFixed(0)}</span>
                         <span className="text-muted-foreground text-xs">/</span>
@@ -264,9 +264,9 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
                       <RotateCcw size={24} strokeWidth={3} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">المرتجعات</p>
-                      <h3 className="text-3xl font-black text-foreground">{(salesSummary.refundedTotal || 0).toFixed(0)} <span className="text-sm">ج.م</span></h3>
-                      <p className="text-xs text-muted-foreground mt-1">{salesSummary.refundedCount || 0} فاتورة مرتجعة</p>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{t('reports.refunds')}</p>
+                      <h3 className="text-3xl font-black text-foreground">{(salesSummary.refundedTotal || 0).toFixed(0)} <span className="text-sm">{t('common.currencySymbol')}</span></h3>
+                      <p className="text-xs text-muted-foreground mt-1">{salesSummary.refundedCount || 0} {t('invoices.refundInvoice')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -282,9 +282,9 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
                   <div>
                     <CardTitle className="text-xl font-black text-foreground flex items-center gap-2">
                       <TrendingUp className="text-primary" />
-                      المبيعات اليومية
+                      {t('reports.dailySales')}
                     </CardTitle>
-                    <CardDescription className="text-xs font-bold font-tajawal mt-1">تطور حجم المبيعات خلال الفترة المحددة</CardDescription>
+                    <CardDescription className="text-xs font-bold font-tajawal mt-1">{t('reports.dailySalesDesc')}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -295,7 +295,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
                   ) : (
                     <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground/30 gap-4">
                       <BarChartIcon size={48} strokeWidth={1} />
-                      <p className="text-sm font-bold">لا توجد بيانات بيع للفترة المحددة</p>
+                      <p className="text-sm font-bold">{t('common.noData')}</p>
                     </div>
                   )}
                 </React.Suspense>
@@ -306,9 +306,9 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
               <CardHeader className="p-8 pb-0">
                 <CardTitle className="text-xl font-black text-foreground flex items-center gap-2">
                   <PieChartIcon className="text-secondary" />
-                  توزيع الفئات
+                  {t('reports.categoryDist')}
                 </CardTitle>
-                <CardDescription className="text-xs font-bold font-tajawal mt-1">نسبة المبيعات حسب تصنيف المنتج</CardDescription>
+                <CardDescription className="text-xs font-bold font-tajawal mt-1">{t('reports.categoryDistDesc')}</CardDescription>
               </CardHeader>
               <CardContent className="p-8 pt-6">
                 <React.Suspense fallback={<ChartLoader />}>
@@ -317,7 +317,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
                   ) : (
                     <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground/30 gap-4">
                       <PieChartIcon size={48} strokeWidth={1} />
-                      <p className="text-sm font-bold">بيانات الفئات غير متوفرة</p>
+                      <p className="text-sm font-bold">{t('reports.noCategoryData')}</p>
                     </div>
                   )}
                 </React.Suspense>
@@ -330,9 +330,9 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
             <CardHeader className="p-8 pb-0">
               <CardTitle className="text-xl font-black text-foreground flex items-center gap-2">
                 <BarChartIcon className="text-primary" />
-                أكثر المنتجات مبيعاً
+                {t('reports.topProducts')}
               </CardTitle>
-              <CardDescription className="text-xs font-bold font-tajawal mt-1">ترتيب المنتجات حسب الأعلى ربحاً وكثافة البيع</CardDescription>
+              <CardDescription className="text-xs font-bold font-tajawal mt-1">{t('reports.topProductsDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="p-8 pt-6">
               <React.Suspense fallback={<ChartLoader />}>
@@ -341,7 +341,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = () => {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-[400px] text-muted-foreground/30 gap-4">
                     <ShoppingBag size={64} strokeWidth={1} />
-                    <p className="text-sm font-bold">لم يتم تسجيل مبيعات لأي منتج خلال هذه الفترة</p>
+                    <p className="text-sm font-bold">{t('reports.noProductData')}</p>
                   </div>
                 )}
               </React.Suspense>

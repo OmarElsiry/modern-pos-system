@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { Layout } from './components';
 
 // Lazy load screens
@@ -14,9 +15,10 @@ const ReportsScreen = lazy(() => import('./screens/ReportsScreen'));
 const SettingsScreen = lazy(() => import('./screens/SettingsScreen'));
 
 function AppRoutes() {
+  const { t } = useTranslation();
   return (
     <Layout>
-      <Suspense fallback={<div className="flex h-screen items-center justify-center">جاري التحميل...</div>}>
+      <Suspense fallback={<div className="flex h-screen items-center justify-center">{t('common.loading')}</div>}>
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
